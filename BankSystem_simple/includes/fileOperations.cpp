@@ -204,6 +204,37 @@ namespace fileOperations {
 
     }
 
+    int printAllAccounts(const char* fileName){
+
+        pugi::xml_document doc;
+
+        int printFlag = 0;
+
+        if(loadBankFileXML(fileName, doc) == 1){
+            std::cout << "printAllAccounts: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+             pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            // check all account numbers to see if already used.
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                if(xnAccount.attribute("Locked").as_int() == 0){ // accounts that are not locked, 0 = not locked.
+
+                    std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+
+                }
+                    
+                
+            }
+
+            return 0;
+        }
+    }
+
     int ifExistsAccountNumber(const char* cAccountNumber, const char* fileName){
 
         pugi::xml_document doc;

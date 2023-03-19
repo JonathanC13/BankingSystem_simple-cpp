@@ -31,6 +31,7 @@ TODO:
 
 int createAccount(const char* fileName);
 void randomAccountNumber(std::string& strAccountNumber);
+int selectAccount(const char* fileName);
 
 
 /*
@@ -87,6 +88,7 @@ int main(){
                 break;
             case 2:
                 // select account
+                operationStatus = selectAccount(fileName);
                 break;
             case 3:
                 // Re-activate account
@@ -138,9 +140,19 @@ Purpose:
 Parameters:
     N/A
 Return:
-    void
+    int: 0 = 
 */
-void selectAccount(){
+int selectAccount(const char* fileName){
+    std::cout << "Current active accounts:" << std::endl;
+    
+
+    if(fileOperations::printAllAccounts(fileName) == 1){
+        return 1;
+    } 
+
+    std::cout << "========================" << std::endl;
+
+    return 0;
 
 }
 
@@ -152,8 +164,8 @@ Parameters:
     N/A
 Return:
     int: For status of account creation
-        0; failure to create the file for the account.
-        1; success, file created.
+        0; success, file created.
+        1; failure to create the file for the account.
 */
 int createAccount(const char* fileName){
 

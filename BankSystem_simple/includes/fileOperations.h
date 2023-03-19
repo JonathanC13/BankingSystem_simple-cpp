@@ -25,6 +25,8 @@ namespace fileOperations {
     int ifExistsAccountNumber(const char* iAccountNumber, const char* fileName);
 
     int traverse_rangefor();
+
+    int printAllAccounts(const char* fileName);
 };
 
 #endif
