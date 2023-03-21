@@ -21,6 +21,15 @@ That prevents double declaration of any identifiers such as types, enums and sta
 
 namespace inputHandler {
 
+    /*
+    Purpose:
+        Get an integer value from the user.
+    Parameters:
+        N/A
+    Return:
+        valid integer from user.
+    */
+    int getUserValidSelectionInt();
 
     /*
     Purpose:

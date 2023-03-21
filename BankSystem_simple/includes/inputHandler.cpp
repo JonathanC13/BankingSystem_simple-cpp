@@ -58,8 +58,8 @@ namespace inputHandler {
         strLine = newStr;
     }
 
-    // Purely getting an integer from the user.
-    int getUserValidInt(){
+    // Getting an integer from the user for selection
+    int getUserValidSelectionInt(){
 
         std::string strIn;
         int intVal;
@@ -71,6 +71,24 @@ namespace inputHandler {
         while(!isInteger(strIn, intVal)){
 
             std::cout << "Please enter a proper selection number from the options above: ";
+            std::getline(std::cin,strIn); // get new value
+        }
+        std::cout << std::endl;
+
+        return intVal;
+    }
+
+    // get valid int
+    int getUserValidInt(){
+
+        std::string strIn;
+        int intVal;
+        
+        std::getline(std::cin,strIn);
+
+        while(!isInteger(strIn, intVal)){
+
+            std::cout << "Please enter a number: ";
             std::getline(std::cin,strIn); // get new value
         }
         std::cout << std::endl;

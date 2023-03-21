@@ -1,6 +1,6 @@
 #include<iostream>
-#include<stdio.h>
 #include<string.h>
+#include <cstring>
 #include<time.h>
 
 // XML Parser
@@ -37,8 +37,8 @@ namespace fileOperations {
             pugi::xml_node rootElem = doc.first_child();
 
 
-            if(strcmp(rootElem.name(), &strRootElem[0]) != 0){ // if the root element is not the expected one, just create new file.
-                
+            //if(strcmp(rootElem.name(), &strRootElem[0]) != 0){ // if the root element is not the expected one, just create new file.
+            if(strRootElem.compare(rootElem.name()) != 0){ // if the root element is not the expected one, just create new file.    
                 pFile = fopen (fileName,"w");
                 fclose (pFile);
 
@@ -62,6 +62,7 @@ namespace fileOperations {
     }
 
     // load the XML information from [file] to [memory] into the XML document object for use.
+    // 1 = fail, 0 success
     int loadBankFileXML(const char* fileName, pugi::xml_document& loadedDocRef){
 
         pugi::xml_parse_result result = loadedDocRef.load_file(fileName); // store result of the XML load
@@ -69,7 +70,10 @@ namespace fileOperations {
 
         //std::cout << "Load result: " << result.description() << std::endl;
 
-        if (strcmp(result.description(), "No error") !=0 && strcmp(result.description(), "No document element found")!=0){
+        std::string res = std::string(result.description());
+
+        //if (strcmp(result.description(), "No error") !=0 && strcmp(result.description(), "No document element found")!=0){
+        if (res.compare("No error") !=0 && res.compare("No document element found")!=0){
 
             return 1;
         } else {
@@ -237,6 +241,8 @@ namespace fileOperations {
 
     int ifExistsAccountNumber(const char* cAccountNumber, const char* fileName){
 
+        std::string strAccountNumber_attr = "AccountNumber";
+
         pugi::xml_document doc;
 
         if(loadBankFileXML(fileName, doc) == 1){
@@ -255,8 +261,8 @@ namespace fileOperations {
             for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
                 for(pugi::xml_attribute xaAccountNumber : xnAccount.attributes()){ // for each Attribute that belongs to the Element "Account"
                     //std::cout << "attr name: " << xaAccountNumber.name() << ", attr value: " << xaAccountNumber.value() << std::endl;
-                    if (strcmp(xaAccountNumber.name(), "AccountNumber") == 0 && strcmp(xaAccountNumber.value(), cAccountNumber) == 0){ // if the attribute is "AccountNumber" and the value of "AccountNumber" matches the value of "iAccountNumber", return false to indicate that the value is already in use.
-
+                    //if (strcmp(xaAccountNumber.name(), "AccountNumber") == 0 && strcmp(xaAccountNumber.value(), cAccountNumber) == 0){ // if the attribute is "AccountNumber" and the value of "AccountNumber" matches the value of "iAccountNumber", return false to indicate that the value is already in use.
+                    if (strAccountNumber_attr.compare(std::string(xaAccountNumber.name())) == 0 && std::string(cAccountNumber).compare(std::string(xaAccountNumber.value())) == 0){ // if the attribute is "AccountNumber" and the value of "AccountNumber" matches the value of "iAccountNumber", return false to indicate that the value is already in use.
                         return 0;
                     }
                 }
@@ -296,6 +302,52 @@ namespace fileOperations {
         size = strftime(timeRet, sizeTimeRet, "%Y-%m-%d %H:%M %Z",structTimeLocal);
 
     }
+
+    // 0 for true
+    // 1 for false
+    // 2 for error
+    int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber){
+
+        char* c_accountName = &strAccountName[0];
+        char* c_accountNumber = &strAccountNumber[0];
+
+        pugi::xml_document doc;
+
+        if(loadBankFileXML(c_fileName, doc) == 1){
+            std::cout << "ifExistsAccountNumber: Could not load or parse XML file." << std::endl;
+            return 2; // some error
+
+        } else {
+
+            std::cout << "Account name in: " << strAccountName << std::endl;
+            std::cout << "Account num in: " << strAccountNumber << std::endl;
+
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                //if(xnAccount.attribute("Locked").as_int() == 0 && strcmp(xnAccount.attribute("AccountName").value(), c_accountName) == 0 && strcmp(xnAccount.attribute("AccountNumber").value(), c_accountNumber) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
+                std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+
+                if(xnAccount.attribute("Locked").as_int() == 0 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
+
+                    std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+
+                    return 0;
+
+                }
+            }
+        }
+
+
+        return 1;
+    }
+
+
+
+
+
     
     void testAdd(){
         pugi::xml_document doc;

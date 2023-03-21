@@ -1,5 +1,6 @@
 #include<iostream>
 #include<time.h>
+#include <cstring>
 #include<string>
 #include<algorithm>
 
@@ -10,11 +11,7 @@
 
 /*
 TODO:
-1. Create account. Return to main option menu -- done
-    Random number generation for account number -- done
-    clean up option menu for account creation   -- done
-    clean up account creation function -- done
-    test account creation -- done
+
 2. Account Management class: - here
     Constructor:  
         only asks for file name
@@ -24,8 +21,13 @@ TODO:
         Deposit
         Withdraw
         Close account -> are you sure confirmation. Not deleting the file, just add a flag to the Account element that it is locked
-3. Select account
+3. Select account -- Need #2 completed first. Initialize object when valid account info entered by user
 4. Re-activate account: removing the 'X' last character from the file name, so that selectAccount function will display it.
+
+git
+Branch from main
+work on branch
+to merge, switch to main and Merge from, then sync to git
 */
 
 
@@ -133,6 +135,10 @@ void randomAccountNumber(std::string& strAccountNumber){
 
 }
 
+void padLeadingZeros(size_t numberOfDigits, std::string &strPadTarget){
+    strPadTarget = std::string(numberOfDigits - std::min(numberOfDigits, strPadTarget.length()), '0') + strPadTarget;
+}
+
 /*
 Purpose:
     Display all accounts' names and account numbers for the user except file names with the last character 'X'. To select an account, have the user type the entire account name and number; accountName_19485
@@ -141,16 +147,59 @@ Parameters:
     N/A
 Return:
     int: 0 = 
-*/
+*/ // TODO
 int selectAccount(const char* fileName){
-    std::cout << "Current active accounts:" << std::endl;
-    
 
-    if(fileOperations::printAllAccounts(fileName) == 1){
-        return 1;
-    } 
+    std::string strInAccountName;
+    int iInAccountNumber;
+    std::string strAccountNumber;
 
-    std::cout << "========================" << std::endl;
+    size_t padLeading = 9;
+
+    while(true){
+        strInAccountName = "";
+        iInAccountNumber = -1;
+        strAccountNumber = "";
+
+        std::cout << "Current active accounts:" << std::endl;
+        
+
+        if(fileOperations::printAllAccounts(fileName) == 1){
+            return 1;
+        } 
+
+        std::cout << "========================" << std::endl;
+        std::cout << "Enter \"exit\" to exit Account Selection. \n" << std::endl;
+
+        // prompt user for account name
+        std::cout << "Enter desired Account Name (case sensative): ";
+        inputHandler::getUserInput(strInAccountName);
+        std::cout << "\n";
+
+        //std::cout << "user entered: " << strInAccountName << std::endl;
+        if(strInAccountName.compare("exit") == 0){
+            break;
+        }
+
+        // prompt user for the associated account number
+        std::cout << "Enter associated Account Number: ";
+        iInAccountNumber = inputHandler::getUserValidInt();
+        strAccountNumber = std::to_string(iInAccountNumber);
+        padLeadingZeros(padLeading, strAccountNumber);
+
+        std::cout << "\n\n";
+
+        //std::cout << "user entered: " << strAccountNumber << std::endl;
+        if(strAccountNumber.compare("exit") == 0){
+            break;
+        }
+
+
+        // check if valid account name and number combination
+        int i = fileOperations::getFlagValidAccount(fileName, strInAccountName, strAccountNumber);
+        std::cout << "ret: " << i << std::endl;
+        break;
+    }
 
     return 0;
 

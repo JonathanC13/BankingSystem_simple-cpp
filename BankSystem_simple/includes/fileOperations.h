@@ -27,6 +27,8 @@ namespace fileOperations {
     int traverse_rangefor();
 
     int printAllAccounts(const char* fileName);
+
+    int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber);
 };
 
 #endif
