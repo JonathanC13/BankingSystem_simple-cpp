@@ -6,8 +6,12 @@
 
 #include ".\includes\inputHandler.h"
 #include ".\includes\fileOperations.h"
+#include ".\includes\AccountManagement.h"
 
-// // complie:  g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp includes/fileOperations.cpp includes/AccountManagement.cpp Libraries/pugixml-1.13/src/pugixml.cpp  // if using includes/eg.h, in the compile then need to explicitly reference the cpp the .h file references.
+/* complie:  
+g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp includes/fileOperations.cpp includes/AccountManagement.cpp Libraries/pugixml-1.13/src/pugixml.cpp
+// if using includes/eg.h, in the compile then need to explicitly reference the cpp the .h file references.
+*/
 
 /* remote2 3
 TODO:
@@ -30,6 +34,14 @@ work on branch
 to merge, switch to main and Merge from, then sync to git
 */
 
+/*
+
+'Account' attribute 'Locked':
+    0: unlocked
+    1: in use
+    2: locked (archived)
+
+*/
 
 int createAccount(const char* fileName);
 void randomAccountNumber(std::string& strAccountNumber);
@@ -51,7 +63,18 @@ int main(){
 
     int operationStatus = 0;
 
+    // test
+    continueFlag = 0;
 
+    int retCode;
+
+    std::string strRet;
+    AccountManagement am = AccountManagement(fileName, "Bert", "123112", retCode);
+    //fileOperations::printTargetNodeDataLevel1(fileName, "Bert", "123112", "Balance", strRet);
+    am.printBalance();
+
+    std::cout << strRet;
+    // /test
 
     //operationStatus = createAccount("BankSystem.XML");
 
@@ -198,6 +221,9 @@ int selectAccount(const char* fileName){
         // check if valid account name and number combination
         int i = fileOperations::getFlagValidAccount(fileName, strInAccountName, strAccountNumber);
         std::cout << "ret: " << i << std::endl;
+
+// TODO here, once a valid account has been chosen, then create an AccountManagement object that will loop internally to prompt the user for commands to interact with the account
+
         break;
     }
 

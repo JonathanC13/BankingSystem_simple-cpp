@@ -29,6 +29,8 @@ namespace fileOperations {
     int printAllAccounts(const char* fileName);
 
     int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber);
+
+    int printTargetNodeDataLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNum, std::string strNode, std::string &strNodeDataRet);
 };
 
 #endif

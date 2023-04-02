@@ -319,8 +319,8 @@ namespace fileOperations {
 
         } else {
 
-            std::cout << "Account name in: " << strAccountName << std::endl;
-            std::cout << "Account num in: " << strAccountNumber << std::endl;
+            //std::cout << "Account name in: " << strAccountName << std::endl;
+            //std::cout << "Account num in: " << strAccountNumber << std::endl;
 
             pugi::xml_node bankAccounts = doc.child("BankAccounts");
 
@@ -344,7 +344,42 @@ namespace fileOperations {
         return 1;
     }
 
+    int printTargetNodeDataLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string &strNodeDataRet){
 
+        pugi::xml_document doc;
+
+        const char* c_Node = &strNode[0];
+
+        int printFlag = 0;
+
+        if(loadBankFileXML(c_fileName, doc) == 1){
+            std::cout << "printAllAccounts: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+             pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            // check all account numbers to see if already used.
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                if(xnAccount.attribute("Locked").as_int() == 0 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
+
+                    // Check only 1 level deeper
+                    strNodeDataRet = std::string(xnAccount.child(c_Node).child_value());
+
+                    return 0;
+
+                }
+                    
+                
+            }
+
+            return 0;
+        }
+
+    }
 
 
 
