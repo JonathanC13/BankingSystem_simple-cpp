@@ -168,7 +168,8 @@ namespace fileOperations {
 
             pugi::xml_node balanceElement = nodeAccount.append_child("Balance");
             balanceElement.append_attribute("lastUpdatedDate") = strDate;
-            balanceElement.append_child(pugi::node_pcdata).set_value("");
+            balanceElement.append_attribute("currentBalance") = 0; // Inital balance = 0
+            //balanceElement.append_child(pugi::node_pcdata).set_value("");
 
             pugi::xml_node transactionHistory = nodeAccount.append_child("TransactionHistory");
             transactionHistory.append_attribute("count") = 1;
@@ -328,11 +329,11 @@ namespace fileOperations {
                 //Attributes that belongs to the Element "Account"
 
                 //if(xnAccount.attribute("Locked").as_int() == 0 && strcmp(xnAccount.attribute("AccountName").value(), c_accountName) == 0 && strcmp(xnAccount.attribute("AccountNumber").value(), c_accountNumber) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
-                std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
 
                 if(xnAccount.attribute("Locked").as_int() == 0 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
 
-                    std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                    //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
 
                     return 0;
 
@@ -344,7 +345,7 @@ namespace fileOperations {
         return 1;
     }
 
-    int printTargetNodeDataLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string &strNodeDataRet){
+    int getTargetNodeDataLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string &strNodeDataRet){
 
         pugi::xml_document doc;
 
@@ -381,8 +382,109 @@ namespace fileOperations {
 
     }
 
+    int getTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string strAttrName, std::string &strNodeAttrRet){
+
+        pugi::xml_document doc;
+
+        const char* c_Node = &strNode[0];
+        const char* c_strAttrName = &strAttrName[0];
+
+        int printFlag = 0;
+
+        if(loadBankFileXML(c_fileName, doc) == 1){
+            std::cout << "printAllAccounts: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+             pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            // check all account numbers to see if already used.
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                if(xnAccount.attribute("Locked").as_int() == 0 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
+
+                    // Check only 1 level deeper
+                    strNodeAttrRet =  xnAccount.child(c_Node).attribute(c_strAttrName).value();
+
+                    return 0;
+
+                }
+                    
+                
+            }
+
+            return 0;
+        }
+
+    }
+
+    int updateTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string strAttrName, std::string &strNodeAttrSet){
+
+        pugi::xml_document doc;
+
+        const char* c_Node = &strNode[0];
+        const char* c_strAttrName = &strAttrName[0];
+        const char* c_strNodeDataSet = &strNodeAttrSet[0];
+
+        //std::cout << "strNodeAttrSet: " << strNodeAttrSet << std::endl;
+
+        int printFlag = 0;
+
+        if(loadBankFileXML(c_fileName, doc) == 1){
+            std::cout << "printAllAccounts: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            // check all account numbers to see if already used.
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                if(xnAccount.attribute("Locked").as_int() == 0 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
+                    
+                    xnAccount.child(c_Node).attribute(c_strAttrName).set_value(c_strNodeDataSet);     
+
+                    //doc.print(std::cout);
 
 
+                    return saveToBankFileXML(c_fileName, doc);             
+
+                }
+                    
+                
+            }
+
+            return 0;
+        }
+
+    }
+
+
+    int getBalance(const char* &fileName, std::string &strAccountName, std::string &AccountNumber, std::string &strBalanceRet){
+        return getTargetNodeAttrLevel1(fileName, strAccountName, AccountNumber, "Balance", "currentBalance", strBalanceRet);
+    }
+
+    int setBalance(const char* &fileName, std::string &strAccountName, std::string &AccountNumber, std::string &strBalanceSet){
+        int operationStatus = 0;
+
+        operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, AccountNumber, "Balance", "currentBalance", strBalanceSet);
+
+        if (operationStatus == 0){
+            // update time stamp
+            char cDate[50];
+            getLocalTime(&cDate[0], sizeof(cDate)-1);
+
+            std::string strDate = std::string(cDate);
+
+            operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, AccountNumber, "Balance", "lastUpdatedDate", strDate);
+        }
+
+        return operationStatus;
+    }
     
     void testAdd(){
         pugi::xml_document doc;
@@ -441,5 +543,59 @@ namespace fileOperations {
 
         return 0;
 
+    }
+
+
+    int modify_base(){
+        pugi::xml_document doc;
+        if (!doc.load_string("<node id='123'>text</node><!-- comment -->", pugi::parse_default | pugi::parse_comments)) return -1;
+
+        // tag::node[]
+        pugi::xml_node node = doc.child("node");
+
+        // change node name
+        std::cout << node.set_name("notnode");
+        std::cout << ", new node name: " << node.name() << std::endl;
+
+        // change comment text
+        std::cout << doc.last_child().set_value("useless comment");
+        std::cout << ", new comment text: " << doc.last_child().value() << std::endl;
+
+        // we can't change value of the element or name of the comment
+        std::cout << node.set_value("1") << ", " << doc.last_child().set_name("2") << std::endl;
+        // end::node[]
+
+        // tag::attr[]
+        pugi::xml_attribute attr = node.attribute("id");
+
+        // change attribute name/value
+        std::cout << attr.set_name("key") << ", " << attr.set_value("345");
+        std::cout << ", new attribute: " << attr.name() << "=" << attr.value() << std::endl;
+
+        // we can use numbers or booleans
+        attr.set_value(1.234);
+        std::cout << "new attribute value: " << attr.value() << std::endl;
+
+        // we can also use assignment operators for more concise code
+        attr = true;
+        std::cout << "final attribute value: " << attr.value() << std::endl;
+        // end::attr[]
+
+        doc.print(std::cout);
+
+        return 0;
+
+        /*
+        
+        1, new node name: notnode
+        1, new comment text: useless comment
+        0, 0
+        1, 1, new attribute: key=345
+        new attribute value: 1.234
+        final attribute value: true
+        <notnode key="true">text</notnode>
+        <!--useless comment-->
+        
+        */
     }
 };

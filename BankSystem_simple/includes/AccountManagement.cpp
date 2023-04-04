@@ -2,6 +2,8 @@
 
 #include<string>
 #include<iostream>
+#include<iomanip>
+#include <sstream>
 
 #include "AccountManagement.h"
 #include "inputHandler.h"
@@ -24,7 +26,6 @@ Todo:
 
 
 
-int AccountCommandCenter();
 
 
 
@@ -92,7 +93,7 @@ int AccountManagement::AccountCommandCenter(){
         operationStatus = printBalance();
         break;
       case 2:
-        // here withdraw
+        operationStatus = Withdraw();
         break;
       case 3:
 
@@ -130,7 +131,7 @@ Purpose: Access account information on file and return the balance.
 Params:
   N/A
 Return:
-  int: For status of account creation
+  int: For status of retrieving balance
     0; success, could access the account and print the balance
     1; failed to access the account and print the balance
 */
@@ -148,7 +149,7 @@ int AccountManagement::printBalance(){
     return 1;
   } else {
     // get and print the balance
-    i = fileOperations::printTargetNodeDataLevel1(this->strFileName, this->strAccountName, this->strAccountNumber, "Balance", balanceRet);
+    i = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, balanceRet);
 
     if(i == 1){
       std::cout << "Error accessing account." << std::endl;
@@ -163,6 +164,95 @@ int AccountManagement::printBalance(){
 
 
   return 0;
+}
+
+/*
+Purpose: Prompt the user the amount to be withdrawn and if valid amount, subtract from the balance and then update the Balance's node data
+Params:
+  N/A
+Return:
+  int: For status for withdraw command
+    0; success to update the balance for withdraw
+    1; failed to update the balance for withdraw
+*/
+int AccountManagement::Withdraw(){
+
+  int opertationStatus;
+
+  long double difference;
+
+  std::string strBalance;
+  long double withdrawAmt;
+  long double ldBalance;
+
+  std::string::size_type sz;
+ 
+
+  //Get the balance:
+  opertationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalance);
+
+  if(opertationStatus == 1){
+    std::cout << "Error accessing account." << std::endl;
+    return 1;
+  } else {
+    std::cout << "Account balance: " << strBalance << std::endl;
+  }
+  
+  ldBalance = std::stold(strBalance, &sz);
+
+  std::cout << "Current balance: " << strBalance << std::endl;
+
+  std::cout << "Enter 0 to exit." << std::endl;
+  std::cout << "Please enter the amount you wish to withdraw, up to 2 fractional digits (123.yy): " << std::endl; 
+  
+  withdrawAmt = inputHandler::getUserValidMoneyVal();
+
+  while (true){
+
+    if (withdrawAmt == 0){
+      break;
+    }
+    else if (withdrawAmt < 0 ){
+      std::cout << "Please enter a value greater than 0." << std::endl;
+    } else if (withdrawAmt > ldBalance){
+      std::cout << "Please enter a value that is not greater than the current balance." << std::endl;
+    } else {
+      break;
+    }
+
+    std::cout << "Enter 0 to exit." << std::endl;
+    withdrawAmt = inputHandler::getUserValidMoneyVal();
+
+  }
+
+  if (withdrawAmt != 0){
+    
+    difference = ldBalance - withdrawAmt;
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(6) << difference;
+
+    std::string strNewBal = ss.str();
+    opertationStatus = 0;
+
+    // update balance in the XML
+    opertationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBal);
+
+    if(opertationStatus == 1){
+      std::cout << "Error accessing account." << std::endl;
+      return 1;
+    } else {
+      opertationStatus = printBalance();
+      if(opertationStatus == 0){
+        std::cout << "Amount withdrawn and balance updated.";
+      }
+      return opertationStatus;
+    }
+  }
+ 
+  return 0;
+
+
 }
 
 /*

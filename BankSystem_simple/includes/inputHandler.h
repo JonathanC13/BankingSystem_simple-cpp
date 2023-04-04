@@ -53,6 +53,8 @@ namespace inputHandler {
     */
     void getUserInput(std::string& strUserIn);
 
+    long double getUserValidMoneyVal();
+
 };
 
 #endif

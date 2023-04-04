@@ -64,16 +64,19 @@ int main(){
     int operationStatus = 0;
 
     // test
-    continueFlag = 0;
+    //continueFlag = 0;
 
     int retCode;
 
-    std::string strRet;
+    //std::string strRet;
     AccountManagement am = AccountManagement(fileName, "Bert", "123112", retCode);
     //fileOperations::printTargetNodeDataLevel1(fileName, "Bert", "123112", "Balance", strRet);
-    am.printBalance();
+    
+    //am.printBalance();
+    //fileOperations::modify_base();
+    //inputHandler::getUserValidMoneyVal();
 
-    std::cout << strRet;
+    //std::cout << strRet;
     // /test
 
     //operationStatus = createAccount("BankSystem.XML");

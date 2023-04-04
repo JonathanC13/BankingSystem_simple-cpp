@@ -30,7 +30,15 @@ namespace fileOperations {
 
     int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber);
 
-    int printTargetNodeDataLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNum, std::string strNode, std::string &strNodeDataRet);
+    int getBalance(const char* &fileName, std::string &strAccountName, std::string &AccountNumber, std::string &strBalanceRet);
+
+    int setBalance(const char* &fileName, std::string &strAccountName, std::string &AccountNumber, std::string &strBalanceSet);
+
+    //int getTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNum, std::string strNode, std::string &strNodeDataRet);
+
+    //int updateTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string strNodeDataSet);
+
+    int modify_base();
 };
 
 #endif

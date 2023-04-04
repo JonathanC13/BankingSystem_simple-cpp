@@ -96,6 +96,47 @@ namespace inputHandler {
         return intVal;
     }
 
+    int getIndexOfDecimal(std::string &s){
+        return s.find(".");
+
+    }
+
+
+    bool isLongDouble(std::string & s, long double &ldOut)
+    {
+        removeStringSpaces(s);
+
+        if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+
+        std::string::size_type sz;
+        ldOut = std::stold(s, &sz); // the *p is set to the next character in the string AFTER the numerical value.
+
+        //std::cout << "a: " << s[sz] << std::endl;
+        return (s[sz] == 0);   // if value of p is NOT the null terminating value, then the string is not wholly a long double.
+    }
+
+    // get valid money value, 2 fractional digits. xx.yy
+    long double getUserValidMoneyVal(){
+
+        std::string strIn;
+        long double ldVal;
+        
+        std::getline(std::cin,strIn);
+
+        while(!isLongDouble(strIn, ldVal) || ((strIn.length() -1) - getIndexOfDecimal(strIn) > 2)){
+
+            //std::cout << ldVal << std::endl;
+            //std::cout << strIn.length()-1 << '-' << getIndexOfDecimal(strIn)  << std::endl;
+            //std::cout << isLongDouble(strIn, ldVal) <<std::endl;
+
+            std::cout << "Please enter a number with maximum 2 fractional digits: ";
+            std::getline(std::cin,strIn); // get new value
+        }
+        std::cout << std::endl;
+
+        return ldVal;
+    }
+
     void getUserInput(std::string& strUserIn){
 
         std::getline(std::cin,strUserIn);
