@@ -392,7 +392,7 @@ namespace fileOperations {
         int printFlag = 0;
 
         if(loadBankFileXML(c_fileName, doc) == 1){
-            std::cout << "printAllAccounts: Could not load or parse XML file." << std::endl;
+            std::cout << "getTargetNodeAttrLevel1: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -433,7 +433,7 @@ namespace fileOperations {
         int printFlag = 0;
 
         if(loadBankFileXML(c_fileName, doc) == 1){
-            std::cout << "printAllAccounts: Could not load or parse XML file." << std::endl;
+            std::cout << "updateTargetNodeAttrLevel1: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -463,15 +463,241 @@ namespace fileOperations {
 
     }
 
+    /*
+    iCommand:
+        1: withdraw
+        2: deposit
+        3: transfer
+    */
+    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest){
 
-    int getBalance(const char* &fileName, std::string &strAccountName, std::string &AccountNumber, std::string &strBalanceRet){
-        return getTargetNodeAttrLevel1(fileName, strAccountName, AccountNumber, "Balance", "currentBalance", strBalanceRet);
+        pugi::xml_document doc;
+
+        std::string strCommandDesc = "";
+        const char* c_Node = "TransactionHistory";
+
+        int transferCompleteFlag = 0;
+
+        char strDate[50];
+        getLocalTime(&strDate[0], sizeof(strDate)-1);
+
+        if(iCommand == 1){
+            strCommandDesc = "Withdraw";
+        } else if (iCommand == 2){
+            strCommandDesc = "Deposit";
+        } else if (iCommand == 3){
+            strCommandDesc = "Transfer to; account name: " + strAccountNameDest + ", account number: " + strAccountNumberDest;
+        } else {
+            std::cout << "addTransactionHistory: No such command: " << iCommand << std::endl;
+            return 1;
+        }
+
+        std::cout << "history strCommandDesc: " << strCommandDesc << std::endl;
+
+        int printFlag = 0;
+
+        if(loadBankFileXML(fileName, doc) == 1){
+            std::cout << "addTransactionHistory: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+             pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                // find dest account, if transfer
+                if (iCommand == 3){
+                    if(xnAccount.attribute("Locked").as_int() == 0 && strAccountNameDest.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumberDest.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){
+
+                        std::cout << "Found dest account: " << strAccountNameDest << std::endl;
+                        // get TransactionHistory Node
+                        pugi::xml_node transactionHistory = xnAccount.child(c_Node);
+
+                        // update attribute count
+                        char * p1;
+                        transactionHistory.attribute("count").set_value(strtol(transactionHistory.attribute("count").value(), &p1,10) + 1);
+
+                        // Add new tranaction history section
+                        pugi::xml_node History = transactionHistory.append_child("History");
+
+                        char * p;
+
+                        History.append_attribute("Order") = transactionHistory.attribute("count").value();
+                        History.append_attribute("Date") = strDate;
+
+                        History.append_attribute("Desc") = &strCommandDesc[0];
+                        
+                        pugi::xml_node transaction = History.append_child("Transaction");
+                        transaction.append_attribute("Desc") = &strCommandDesc[0]; 
+
+                        pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+                        pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
+                        fromAccountName.text() = &strAccountName[0];
+
+                        pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                        fromAccountNumber.text() = &strAccountNumber[0];
+
+                        pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+                        amountFrom.text() = &strChangeAmt[0];
+
+
+                        pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                        
+                        pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                        toAccountName.text() = &strAccountNameDest[0];
+
+                        pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                        toAccountNumber.text() = &strAccountNumberDest[0];
+
+                        pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+                        toAccountNumber.text() = &strChangeAmt[0];
+
+                        transferCompleteFlag++;
+                    }
+                }
+
+                // find source account
+                if(xnAccount.attribute("Locked").as_int() == 0 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
+
+                    // get TransactionHistory Node
+                    pugi::xml_node transactionHistory = xnAccount.child(c_Node);
+
+                    // update attribute count
+                    char * p1;
+                    transactionHistory.attribute("count").set_value(strtol(transactionHistory.attribute("count").value(), &p1,10) + 1);
+
+                    // Add new tranaction history section
+                    pugi::xml_node History = transactionHistory.append_child("History");
+
+                    char * p;
+
+                    History.append_attribute("Order") = transactionHistory.attribute("count").value();
+                    History.append_attribute("Date") = strDate;
+
+                    History.append_attribute("Desc") = &strCommandDesc[0];
+                    
+                    pugi::xml_node transaction = History.append_child("Transaction");
+                    transaction.append_attribute("Desc") = &strCommandDesc[0]; 
+
+                    if (iCommand == 1){
+                        std::cout << "withdraw" << std::endl;
+                        // withdraw
+                        pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+                        pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
+                        fromAccountName.text() = &strAccountName[0];
+
+                        pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                        fromAccountNumber.text() = &strAccountNumber[0];
+
+                        pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+                        amountFrom.text() = &strChangeAmt[0];
+
+
+                        pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                        
+                        pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                        toAccountName.text() = "";
+
+                        pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                        toAccountNumber.text() = "";
+
+                        pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+                        toAccountNumber.text() = "";
+                        std::cout << "withdraw end" << std::endl;
+                        break;
+                    }
+                    else if(iCommand == 2){
+                        // deposit
+                        pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+                        pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
+                        fromAccountName.text() = "";
+
+                        pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                        fromAccountNumber.text() = "";
+
+                        pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+                        amountFrom.text() = "";
+
+
+                        pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                        
+                        pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                        toAccountName.text() = &strAccountName[0];
+
+                        pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                        toAccountNumber.text() = &strAccountNumber[0];
+
+                        pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+                        toAccountNumber.text() = &strChangeAmt[0];
+
+                        break;
+                    } else if (iCommand == 3){
+                        // transfer. Source account
+
+                        pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+                        pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
+                        fromAccountName.text() = &strAccountName[0];
+
+                        pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                        fromAccountNumber.text() = &strAccountNumber[0];
+
+                        pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+                        amountFrom.text() = &strChangeAmt[0];
+
+
+                        pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                        
+                        pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                        toAccountName.text() = &strAccountNameDest[0];
+
+                        pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                        toAccountNumber.text() = &strAccountNumberDest[0];
+
+                        pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+                        toAccountNumber.text() = &strChangeAmt[0];
+
+                        transferCompleteFlag++;
+
+                    }
+
+                    
+
+                }
+                
+                if(transferCompleteFlag == 2){
+                    break;
+                }
+                
+            }
+
+            return saveToBankFileXML(fileName, doc);
+        }
+
+
+
+        
+
+        return 0;
     }
 
-    int setBalance(const char* &fileName, std::string &strAccountName, std::string &AccountNumber, std::string &strBalanceSet){
+
+    int getBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceRet){
+        return getTargetNodeAttrLevel1(fileName, strAccountName, strAccountNumber, "Balance", "currentBalance", strBalanceRet);
+    }
+
+    /*
+    iCommand:
+        1: withdraw
+        2: deposit
+        3: transfer
+    */
+    int setBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand){
         int operationStatus = 0;
 
-        operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, AccountNumber, "Balance", "currentBalance", strBalanceSet);
+        operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, strAccountNumber, "Balance", "currentBalance", strBalanceSet);
 
         if (operationStatus == 0){
             // update time stamp
@@ -480,8 +706,17 @@ namespace fileOperations {
 
             std::string strDate = std::string(cDate);
 
-            operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, AccountNumber, "Balance", "lastUpdatedDate", strDate);
+            operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, strAccountNumber, "Balance", "lastUpdatedDate", strDate);         
         }
+
+        if (operationStatus == 0){
+            std::cout << "history" << std::endl;
+            // add transaction history
+            operationStatus = addTransactionHistory(fileName, strAccountName, strAccountNumber, strBalanceSet, strOrgBal, strChangeAmt, iCommand, "", "");
+            
+
+        }
+
 
         return operationStatus;
     }

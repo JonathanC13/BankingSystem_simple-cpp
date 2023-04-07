@@ -19,7 +19,9 @@ Return:
 
 /*
 Todo:
-  Withdraw
+  
+  withdraw and deposit, transaction history. Test withdraw and deposit
+  transfer.
 */
 
 // Close account: ask to withdraw all money or transfer. If withdraw, then set to 0 and lock account (Locked = 3). If transfer, transfer to valid account then lock.
@@ -93,10 +95,13 @@ int AccountManagement::AccountCommandCenter(){
         operationStatus = printBalance();
         break;
       case 2:
-        operationStatus = Withdraw();
+        operationStatus = withdraw();
         break;
       case 3:
-
+        operationStatus = deposit();
+        break;
+      case 4:
+        // Transfer
         break;
       case 99:
         break;
@@ -166,6 +171,7 @@ int AccountManagement::printBalance(){
   return 0;
 }
 
+
 /*
 Purpose: Prompt the user the amount to be withdrawn and if valid amount, subtract from the balance and then update the Balance's node data
 Params:
@@ -175,7 +181,7 @@ Return:
     0; success to update the balance for withdraw
     1; failed to update the balance for withdraw
 */
-int AccountManagement::Withdraw(){
+int AccountManagement::withdraw(){
 
   int opertationStatus;
 
@@ -226,6 +232,7 @@ int AccountManagement::Withdraw(){
   }
 
   if (withdrawAmt != 0){
+    opertationStatus = 0;
     
     difference = ldBalance - withdrawAmt;
 
@@ -233,10 +240,18 @@ int AccountManagement::Withdraw(){
     ss << std::fixed << std::setprecision(6) << difference;
 
     std::string strNewBal = ss.str();
-    opertationStatus = 0;
+    
+
+    std::stringstream ssBal;
+    ssBal << ldBalance;
+    std::string strBal = ssBal.str();
+
+    std::stringstream ssWithdraw;
+    ssWithdraw << withdrawAmt;
+    std::string strWithdraw = ssWithdraw.str();
 
     // update balance in the XML
-    opertationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBal);
+    opertationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBal, strNewBal, strWithdraw, 1);
 
     if(opertationStatus == 1){
       std::cout << "Error accessing account." << std::endl;
@@ -253,6 +268,127 @@ int AccountManagement::Withdraw(){
   return 0;
 
 
+}
+
+/*
+  Purpose: Prompt the user the amount to be deposited and if valid amount, add to the balance and then update the Balance's node data
+  Params:
+    N/A
+  Return:
+    int: For status for deposit command
+      0; success to update the balance for deposit
+      1; failed to update the balance for deposit
+  */
+int AccountManagement::deposit(){
+
+  int opertationStatus;
+
+  long double sum;
+
+  std::string strBalance;
+  long double depositAmt;
+  long double ldBalance;
+
+  std::string::size_type sz;
+ 
+
+  //Get the balance:
+  opertationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalance);
+
+  if(opertationStatus == 1){
+    std::cout << "Error accessing account." << std::endl;
+    return 1;
+  } else {
+    std::cout << "Account balance: " << strBalance << std::endl;
+  }
+  
+  ldBalance = std::stold(strBalance, &sz);
+
+  std::cout << "Current balance: " << strBalance << std::endl;
+
+  std::cout << "Enter 0 to exit." << std::endl;
+  std::cout << "Please enter the amount you wish to deposit, up to 2 fractional digits (123.yy): " << std::endl; 
+  
+  depositAmt = inputHandler::getUserValidMoneyVal();
+
+  while (true){
+
+    if (depositAmt == 0){
+      break;
+    }
+    else if (depositAmt < 0 ){
+      std::cout << "Please enter a value greater than 0." << std::endl;
+    } else {
+      break;
+    }
+
+    std::cout << "Enter 0 to exit." << std::endl;
+    depositAmt = inputHandler::getUserValidMoneyVal();
+
+  }
+
+  if (depositAmt != 0){
+    opertationStatus = 0;
+    
+    sum = ldBalance + depositAmt;
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(6) << sum; // 6 factional digits
+
+    std::string strNewBal = ss.str();
+    
+
+    std::stringstream ssBal;
+    ssBal << ldBalance;
+    std::string strBal = ssBal.str();
+
+    std::stringstream ssDepsit;
+    ssDepsit << depositAmt;
+    std::string strDeposit= ssDepsit.str();
+
+    // update balance in the XML
+    opertationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBal, strBal, strDeposit, 2);
+
+    if(opertationStatus == 1){
+      std::cout << "Error accessing account." << std::endl;
+      return 1;
+    } else {
+      opertationStatus = printBalance();
+      if(opertationStatus == 0){
+        std::cout << "Amount deposited and balance updated.";
+      }
+      return opertationStatus;
+    }
+  }
+
+  return 0;
+}
+
+/*
+Purpose:
+Params:
+  
+Return:
+  
+*/
+int AccountManagement::transfer(){
+
+  /*
+  
+  1. print all accounts, excluding itself. 
+  2. Prompt the user to enter the destination account name, 0 will signal exit
+  3. Prompt the user to enter the destination account number, 0 will signal exit
+  4. Make sure it is not the same account as the one currently selected
+  5. check if account exists and NOT locked
+    5.1. If yes, Ask for transfer amount and check if valid to withdraw from source. 0 will signal exit
+      5.1.1. Call fileOperation function that performs the transfer, give source info and destination info. The function will update the balances and add transaction history
+    5.2. No, re-ask destination account info
+                    
+
+  
+  
+  */
+  return 0;
 }
 
 /*

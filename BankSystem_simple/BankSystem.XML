@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <BankAccounts>
 	<Account AccountName="Bert" AccountNumber="123112" Locked="0">
-		<Balance lastUpdatedDate="2023-04-03 20:47 Eastern Daylight Time" currentBalance="949.413456" />
-		<TransactionHistory count="1">
+		<Balance lastUpdatedDate="2023-04-06 21:10 Eastern Daylight Time" currentBalance="900.003456" />
+		<TransactionHistory count="2">
 			<History Order="1" Date="2023-03-07 21:42 Eastern Standard Time" Desc="Account created.">
 				<Transaction Desc="none">
 					<TransferFrom>
@@ -13,6 +13,20 @@
 					<TransferTo>
 						<AccountName />
 						<AccountNumber />
+						<AmountTo />
+					</TransferTo>
+				</Transaction>
+			</History>
+			<History Order="2" Date="2023-04-06 21:10 Eastern Daylight Time" Desc="Withdraw">
+				<Transaction Desc="Withdraw">
+					<TransferFrom>
+						<AccountName>Bert</AccountName>
+						<AccountNumber>123112</AccountNumber>
+						<AmountFrom>14.65</AmountFrom>
+					</TransferFrom>
+					<TransferTo>
+						<AccountName></AccountName>
+						<AccountNumber></AccountNumber>
 						<AmountTo />
 					</TransferTo>
 				</Transaction>

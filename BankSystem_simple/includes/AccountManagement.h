@@ -52,6 +52,8 @@ public:
   */
   int printBalance();
 
+
+
   /*
   Purpose: Prompt the user the amount to be withdrawn and if valid amount, subtract from the balance and then update the Balance's node data
   Params:
@@ -61,10 +63,27 @@ public:
       0; success to update the balance for withdraw
       1; failed to update the balance for withdraw
   */
-  int Withdraw();
+  int withdraw();
+
+
+  /*
+  Purpose: Prompt the user the amount to be deposited and if valid amount, add to the balance and then update the Balance's node data
+  Params:
+    N/A
+  Return:
+    int: For status for deposit command
+      0; success to update the balance for deposit
+      1; failed to update the balance for deposit
+  */
+  int deposit();
+
+
+  int transfer();
 
   //void printFileName();
 
+private:
+  
 
 
 };
