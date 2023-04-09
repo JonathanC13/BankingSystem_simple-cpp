@@ -143,6 +143,9 @@ namespace inputHandler {
 
     }
 
+    void padLeadingZeros(size_t numberOfDigits, std::string &strPadTarget){
+        strPadTarget = std::string(numberOfDigits - std::min(numberOfDigits, strPadTarget.length()), '0') + strPadTarget;
+    }
     
 
 };

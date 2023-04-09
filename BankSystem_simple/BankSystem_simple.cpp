@@ -69,7 +69,8 @@ int main(){
     int retCode;
 
     //std::string strRet;
-    AccountManagement am = AccountManagement(fileName, "Bert", "123112", retCode);
+    AccountManagement am = AccountManagement(fileName, "Bert", "000123112", retCode);
+    //AccountManagement am = AccountManagement(fileName, "Jo", "000155554", retCode);
     //fileOperations::printTargetNodeDataLevel1(fileName, "Bert", "123112", "Balance", strRet);
     
     //am.printBalance();
@@ -161,10 +162,11 @@ void randomAccountNumber(std::string& strAccountNumber){
 
 }
 
+/*
 void padLeadingZeros(size_t numberOfDigits, std::string &strPadTarget){
     strPadTarget = std::string(numberOfDigits - std::min(numberOfDigits, strPadTarget.length()), '0') + strPadTarget;
 }
-
+*/
 /*
 Purpose:
     Display all accounts' names and account numbers for the user except file names with the last character 'X'. To select an account, have the user type the entire account name and number; accountName_19485
@@ -190,7 +192,7 @@ int selectAccount(const char* fileName){
         std::cout << "Current active accounts:" << std::endl;
         
 
-        if(fileOperations::printAllAccounts(fileName) == 1){
+        if(fileOperations::printAllUnlockedAccounts(fileName) == 1){
             return 1;
         } 
 
@@ -211,7 +213,7 @@ int selectAccount(const char* fileName){
         std::cout << "Enter associated Account Number: ";
         iInAccountNumber = inputHandler::getUserValidInt();
         strAccountNumber = std::to_string(iInAccountNumber);
-        padLeadingZeros(padLeading, strAccountNumber);
+        inputHandler::padLeadingZeros(padLeading, strAccountNumber);
 
         std::cout << "\n\n";
 
@@ -222,11 +224,17 @@ int selectAccount(const char* fileName){
 
 
         // check if valid account name and number combination
+         // 0 for true
+        // 1 for false
+        // 2 for error
         int i = fileOperations::getFlagValidAccount(fileName, strInAccountName, strAccountNumber);
         std::cout << "ret: " << i << std::endl;
 
 // TODO here, once a valid account has been chosen, then create an AccountManagement object that will loop internally to prompt the user for commands to interact with the account
+// Lock the account with "Locked" = 1 to indicate that it is in use. Make sure user cannot an account that is not 0
+//xnAccount.attribute("Locked").set_value("1");
 
+// When exit, need to set "Locked" = 0,
         break;
     }
 

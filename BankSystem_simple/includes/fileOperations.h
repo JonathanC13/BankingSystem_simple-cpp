@@ -28,6 +28,10 @@ namespace fileOperations {
 
     int printAllAccounts(const char* fileName);
 
+    int printAllUnlockedAccounts(const char* fileName);
+
+    int printAllAccountsExcludeCurr(const char* fileName, std::string &strAccountName, std::string &strAccountNumber);
+
     int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber);
 
     int getBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceRet);
@@ -37,6 +41,8 @@ namespace fileOperations {
     //int getTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNum, std::string strNode, std::string &strNodeDataRet);
 
     //int updateTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string strNodeDataSet);
+
+    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest);
 
     int modify_base();
 };

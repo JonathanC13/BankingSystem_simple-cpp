@@ -55,6 +55,8 @@ namespace inputHandler {
 
     long double getUserValidMoneyVal();
 
+    void padLeadingZeros(size_t numberOfDigits, std::string &strPadTarget);
+
 };
 
 #endif

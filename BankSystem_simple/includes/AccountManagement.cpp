@@ -18,10 +18,20 @@ Return:
 */
 
 /*
+
 Todo:
   
-  withdraw and deposit, transaction history. Test withdraw and deposit
-  transfer.
+
+  Need a better locking mechanism? 
+    So, if the account is accessible for the owner through online banking, it's ok since they log in and can do whatever
+    In this app, it is for like an advisor or teller. Only 1 "Bank staff" can be active on the account.
+      Since selecting an account only shows unlocked "Locked" = 0 accounts to choose from and they can only choose "Locked" = 0 accounts. The operations on the account do not have to check the "Locked" status.
+        1. getBalance -> getTargetNodeAttrLevel1
+        2. setBalance -> updateTargetNodeAttrLevel1
+                      -> addTransactionHistory
+        
+
+  Then go back to Account select in BankSystem_simple.cpp
 */
 
 // Close account: ask to withdraw all money or transfer. If withdraw, then set to 0 and lock account (Locked = 3). If transfer, transfer to valid account then lock.
@@ -101,7 +111,7 @@ int AccountManagement::AccountCommandCenter(){
         operationStatus = deposit();
         break;
       case 4:
-        // Transfer
+        operationStatus = transfer();
         break;
       case 99:
         break;
@@ -183,7 +193,7 @@ Return:
 */
 int AccountManagement::withdraw(){
 
-  int opertationStatus;
+  int operationStatus;
 
   long double difference;
 
@@ -195,9 +205,9 @@ int AccountManagement::withdraw(){
  
 
   //Get the balance:
-  opertationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalance);
+  operationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalance);
 
-  if(opertationStatus == 1){
+  if(operationStatus == 1){
     std::cout << "Error accessing account." << std::endl;
     return 1;
   } else {
@@ -226,13 +236,22 @@ int AccountManagement::withdraw(){
       break;
     }
 
+    // query balance again in case it changed
+    operationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalance);
+
+    if(operationStatus == 1){
+      std::cout << "Error accessing account." << std::endl;
+      return 1;
+    } else {
+      std::cout << "Account balance: " << strBalance << std::endl;
+    }
     std::cout << "Enter 0 to exit." << std::endl;
     withdrawAmt = inputHandler::getUserValidMoneyVal();
 
   }
 
   if (withdrawAmt != 0){
-    opertationStatus = 0;
+    operationStatus = 0;
     
     difference = ldBalance - withdrawAmt;
 
@@ -251,17 +270,17 @@ int AccountManagement::withdraw(){
     std::string strWithdraw = ssWithdraw.str();
 
     // update balance in the XML
-    opertationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBal, strNewBal, strWithdraw, 1);
+    operationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBal, strNewBal, strWithdraw, 1);
 
-    if(opertationStatus == 1){
+    if(operationStatus == 1){
       std::cout << "Error accessing account." << std::endl;
       return 1;
     } else {
-      opertationStatus = printBalance();
-      if(opertationStatus == 0){
+      operationStatus = printBalance();
+      if(operationStatus == 0){
         std::cout << "Amount withdrawn and balance updated.";
       }
-      return opertationStatus;
+      return operationStatus;
     }
   }
  
@@ -281,7 +300,7 @@ int AccountManagement::withdraw(){
   */
 int AccountManagement::deposit(){
 
-  int opertationStatus;
+  int operationStatus;
 
   long double sum;
 
@@ -293,9 +312,9 @@ int AccountManagement::deposit(){
  
 
   //Get the balance:
-  opertationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalance);
+  operationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalance);
 
-  if(opertationStatus == 1){
+  if(operationStatus == 1){
     std::cout << "Error accessing account." << std::endl;
     return 1;
   } else {
@@ -328,7 +347,7 @@ int AccountManagement::deposit(){
   }
 
   if (depositAmt != 0){
-    opertationStatus = 0;
+    operationStatus = 0;
     
     sum = ldBalance + depositAmt;
 
@@ -347,17 +366,17 @@ int AccountManagement::deposit(){
     std::string strDeposit= ssDepsit.str();
 
     // update balance in the XML
-    opertationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBal, strBal, strDeposit, 2);
+    operationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBal, strBal, strDeposit, 2);
 
-    if(opertationStatus == 1){
+    if(operationStatus == 1){
       std::cout << "Error accessing account." << std::endl;
       return 1;
     } else {
-      opertationStatus = printBalance();
-      if(opertationStatus == 0){
+      operationStatus = printBalance();
+      if(operationStatus == 0){
         std::cout << "Amount deposited and balance updated.";
       }
-      return opertationStatus;
+      return operationStatus;
     }
   }
 
@@ -384,12 +403,267 @@ int AccountManagement::transfer(){
       5.1.1. Call fileOperation function that performs the transfer, give source info and destination info. The function will update the balances and add transaction history
     5.2. No, re-ask destination account info
                     
+  */
+  int operationStatus;
 
   
+
+  std::string strAccountNameDest;
+  int iInAccountNumber;
+  std::string strAccountNumberDest;
+
+  int iDestAccExists = -1;
+
+  size_t padLeading = 9;
+
+  while(true){
+    strAccountNameDest = "";
+    iInAccountNumber = -1;
+    strAccountNumberDest = "";
+
+    std::cout << "Available accounts to transer to:" << std::endl;
+
+
+    if(fileOperations::printAllUnlockedAccounts(this->strFileName) == 1){
+        return 1;
+    } 
+
+    std::cout <<  "================================" << std::endl;
+    std::cout << "Enter \"exit\" to exit Account Selection. \n" << std::endl;
+
+    // prompt user for account name
+    std::cout << "Enter desired destination Account Name (case sensative): ";
+    inputHandler::getUserInput(strAccountNameDest);
+    std::cout << "\n";
+
+    //std::cout << "user entered: " << strAccountNameDest << std::endl;
+    if(strAccountNameDest.compare("exit") == 0){
+        break;
+    }
+
+    // prompt user for the associated account number
+    std::cout << "Enter associated destination Account Number: ";
+    iInAccountNumber = inputHandler::getUserValidInt();
+    strAccountNumberDest = std::to_string(iInAccountNumber);
+    inputHandler::padLeadingZeros(padLeading, strAccountNumberDest);
+
+    std::cout << "\n\n";
+
+    //std::cout << "user entered: " << strAccountNumber << std::endl;
+    if(strAccountNumberDest.compare("exit") == 0){
+        break;
+    }
+
+
+    // check if valid account name and number combination
+      // 0 for true
+    // 1 for false
+    // 2 for error
+    iDestAccExists = fileOperations::getFlagValidAccount(this->strFileName, strAccountNameDest, strAccountNumberDest);
+    //std::cout <<"ret: " << iDestAccExists << std::endl;
+    if(iDestAccExists == 2){
+      return 1;
+    } else if (iDestAccExists == 0){
+      break;
+    } else {
+      std::cout << "Destination account does not exist, please try again.\n" << std::endl;
+    }
+
+  }
+
   
-  */
+
+  if (iDestAccExists == 0){
+    
+    std::string currBalanceSrc;
+    long double ldTransferAmt;
+    long double ldCurrBalanceSrc;
+
+    operationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, currBalanceSrc);
+    if (operationStatus == 1){
+      return 1;
+    }
+
+
+    std::string::size_type sz;
+    ldCurrBalanceSrc = std::stold(currBalanceSrc, &sz);
+
+
+    std::cout << "Current account name: " << this->strAccountName << ", account number: " << this->strAccountNumber << ". Balance: " << currBalanceSrc << std::endl;
+    std::cout << "Destination account name: " << strAccountNameDest << ", account number: " << strAccountNumberDest << std::endl;
+    std::cout << "Please enter the valid amount to transfer to destination, up to 2 fractional digits (123.yy), or 0 to exit: ";
+    ldTransferAmt = inputHandler::getUserValidMoneyVal();
+
+    while (true){
+
+      if (ldTransferAmt == 0){
+        break;
+      }
+      else if (ldTransferAmt < 0 ){
+        std::cout << "Please enter a value greater than 0." << std::endl;
+      } else if (ldTransferAmt > ldCurrBalanceSrc){
+        std::cout << "Please enter a value that is not greater than the current balance of the source account." << std::endl;
+      } else {
+        
+        break;
+
+      }
+
+
+      std::cout << "Enter 0 to exit." << std::endl;
+      ldTransferAmt = inputHandler::getUserValidMoneyVal();
+
+    }
+
+    if (ldTransferAmt != 0){
+      std::string currBalanceDest;
+      long double ldCurrBalanceDest;
+      std::string::size_type szDest;
+      
+
+      long double sum;
+      long double diff;
+
+      operationStatus = 0;
+    
+      // withdraw from source
+      diff = ldCurrBalanceSrc - ldTransferAmt;
+
+      std::stringstream ssSrc;
+      ssSrc << std::fixed << std::setprecision(6) << diff; // 6 factional digits
+      std::string strNewBalSrc = ssSrc.str();
+      
+      std::stringstream ssBalSrc;
+      ssBalSrc << ldCurrBalanceSrc;
+      std::string strBalSrc = ssBalSrc.str();
+
+      // --
+
+      // deposit info
+      operationStatus = fileOperations::getBalance(this->strFileName, strAccountNameDest, strAccountNumberDest, currBalanceDest);
+      if (operationStatus == 1){
+        return 1;
+      }
+
+      ldCurrBalanceDest = std::stold(currBalanceDest, &szDest);
+
+      sum = ldCurrBalanceDest + ldTransferAmt;
+
+      std::stringstream ssDest;
+      ssDest << std::fixed << std::setprecision(6) << sum; // 6 factional digits
+      std::string strNewBalDest = ssDest.str();
+      
+      std::stringstream ssBalDest;
+      ssBalDest << ldCurrBalanceDest;
+      std::string strBalDest = ssBalDest.str();
+
+
+      // --
+
+      std::stringstream ssTransfer;
+      ssTransfer << ldTransferAmt;
+      std::string strTransfer = ssTransfer.str();
+
+      // update Source balance in the XML
+      std::cout << "with: " << strNewBalSrc << std::endl;
+      operationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strNewBalSrc, strBalSrc, strTransfer, 3);
+
+      if(operationStatus == 1){
+        std::cout << "Transfer error: Could not withdraw from source account." << std::endl;
+        // check if withdraw occurred, if yes. Then revert.
+        std::string currBalanceSrcErr;
+
+        operationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, currBalanceSrcErr);
+        if (operationStatus == 1){
+          std::cout << "Transfer error: Could not get current balance from source account." << std::endl;
+          return 1;
+        }
+
+        // compare if balance before withdraw initiated is different than now. If not the same then update to the original balance.
+        if(currBalanceSrcErr.compare(currBalanceSrc) != 0){
+          operationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalSrc, strBalSrc, strTransfer, 3);
+          if (operationStatus == 1){
+            std::cout << "Transfer error: Could not update balance of source account, need manual adjustment. Current balance: " << currBalanceSrcErr << ", Correct balance: " << currBalanceSrc << std::endl;
+            return 1;
+          }
+        }
+
+        return 1;
+      }
+
+      // update Destination balance in the XML
+      std::cout << "dep: " << strNewBalDest << std::endl;
+      operationStatus = fileOperations::setBalance(this->strFileName, strAccountNameDest, strAccountNumberDest, strNewBalDest, strBalDest, strTransfer, 3);
+
+      //std::cout << "operationStatus: " << operationStatus << std::endl;
+      if(operationStatus == 1){
+        std::cout << "Transfer error: Could not deposit to destination account." << std::endl;
+        // check if deposit occurred, if yes. Then revert.
+        std::string currBalanceDestErr;
+
+        operationStatus = fileOperations::getBalance(this->strFileName, strAccountNameDest, strAccountNumberDest, currBalanceDestErr);
+        if (operationStatus == 1){
+          std::cout << "Transfer error: Could not get current balance from destination account." << std::endl;
+          return 1;
+        }
+
+        // compare if balance before deposit initiated is different than now. If not the same then update to the original balance.
+        if(currBalanceDestErr.compare(currBalanceDest) != 0){
+          operationStatus = fileOperations::setBalance(this->strFileName, strAccountNameDest, strAccountNumberDest, strBalDest, strBalDest, strTransfer, 3);
+          if (operationStatus == 1){
+            std::cout << "Transfer error: Could not update balance of destination account, need manual adjustment. Current balance: " << currBalanceDestErr << ", Correct balance: " << currBalanceDest << std::endl;
+            return 1;
+          }
+        }
+
+        // need to revert withdraw from source account
+        std::string currBalanceSrcErr;
+
+        operationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, currBalanceSrcErr);
+        if (operationStatus == 1){
+          std::cout << "Transfer error: Could not get current balance from source account." << std::endl;
+          return 1;
+        }
+
+        // compare if balance before withdraw initiated is different than now. If not the same then update to the original balance.
+        if(currBalanceSrcErr.compare(currBalanceSrc) != 0){
+          operationStatus = fileOperations::setBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalSrc, strBalSrc, strTransfer, 3);
+          if (operationStatus == 1){
+            std::cout << "Transfer error: Could not update balance of source account, need manual adjustment. Current balance: " << currBalanceSrcErr << ", Correct balance: " << currBalanceSrc << std::endl;
+            return 1;
+          }
+        }
+
+        return 1;
+      }
+
+      // update transaction history for both accounts
+      operationStatus = fileOperations::addTransactionHistory(this->strFileName, strAccountName, strAccountNumber, strBalSrc, currBalanceSrc, strTransfer, 3, strAccountNameDest, strAccountNumberDest);
+
+      if(operationStatus == 1){
+        std::cout << "Adding transaction history for transfer errored." << std::endl;
+        return 1;
+      }
+
+      
+      
+      if(operationStatus == 0){
+        std::cout << "Transfer complete.";
+      }
+      return operationStatus;
+      
+    }
+
+  }
+
+
+
+  
+
   return 0;
 }
+
+
 
 /*
 void AccountManagement::printFileName(){
