@@ -96,6 +96,10 @@ namespace inputHandler {
         return intVal;
     }
 
+  
+
+    
+
     int getIndexOfDecimal(std::string &s){
         return s.find(".");
 
@@ -130,6 +134,27 @@ namespace inputHandler {
             //std::cout << isLongDouble(strIn, ldVal) <<std::endl;
 
             std::cout << "Please enter a number with maximum 2 fractional digits: ";
+            std::getline(std::cin,strIn); // get new value
+        }
+        std::cout << std::endl;
+
+        return ldVal;
+    }
+
+    long double getUserValid6FracVal(){
+
+        std::string strIn;
+        long double ldVal;
+        
+        std::getline(std::cin,strIn);
+
+        while(!isLongDouble(strIn, ldVal) || ((strIn.length() -1) - getIndexOfDecimal(strIn) > 6)){
+
+            //std::cout << ldVal << std::endl;
+            //std::cout << strIn.length()-1 << '-' << getIndexOfDecimal(strIn)  << std::endl;
+            //std::cout << isLongDouble(strIn, ldVal) <<std::endl;
+
+            std::cout << "Please enter a number with maximum 6 fractional digits: ";
             std::getline(std::cin,strIn); // get new value
         }
         std::cout << std::endl;

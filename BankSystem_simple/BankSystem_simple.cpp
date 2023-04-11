@@ -68,6 +68,8 @@ int main(){
 
     int retCode;
 
+    
+
     //std::string strRet;
     AccountManagement am = AccountManagement(fileName, "Bert", "000123112", retCode);
     //AccountManagement am = AccountManagement(fileName, "Jo", "000155554", retCode);
@@ -197,7 +199,7 @@ int selectAccount(const char* fileName){
         } 
 
         std::cout << "========================" << std::endl;
-        std::cout << "Enter \"exit\" to exit Account Selection. \n" << std::endl;
+        std::cout << "Enter \"-1\" to exit Account Selection. \n" << std::endl;
 
         // prompt user for account name
         std::cout << "Enter desired Account Name (case sensative): ";
@@ -205,22 +207,25 @@ int selectAccount(const char* fileName){
         std::cout << "\n";
 
         //std::cout << "user entered: " << strInAccountName << std::endl;
-        if(strInAccountName.compare("exit") == 0){
+        if(strInAccountName.compare("-1") == 0){
             break;
         }
 
         // prompt user for the associated account number
         std::cout << "Enter associated Account Number: ";
         iInAccountNumber = inputHandler::getUserValidInt();
+
         strAccountNumber = std::to_string(iInAccountNumber);
+        //std::cout << "user entered: " << strAccountNumber << std::endl;
+        if(strAccountNumber.compare("-1") == 0){
+            break;
+        }
+
         inputHandler::padLeadingZeros(padLeading, strAccountNumber);
 
         std::cout << "\n\n";
 
-        //std::cout << "user entered: " << strAccountNumber << std::endl;
-        if(strAccountNumber.compare("exit") == 0){
-            break;
-        }
+        
 
 
         // check if valid account name and number combination

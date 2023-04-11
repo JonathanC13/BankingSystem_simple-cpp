@@ -41,6 +41,8 @@ namespace inputHandler {
     */
     int getUserValidInt();
 
+   
+
     void removeStringSpaces(std::string &strLine);
 
     /*
@@ -54,6 +56,8 @@ namespace inputHandler {
     void getUserInput(std::string& strUserIn);
 
     long double getUserValidMoneyVal();
+
+    long double getUserValid6FracVal();
 
     void padLeadingZeros(size_t numberOfDigits, std::string &strPadTarget);
 

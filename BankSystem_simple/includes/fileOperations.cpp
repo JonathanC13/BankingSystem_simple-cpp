@@ -270,6 +270,37 @@ namespace fileOperations {
         }
     }
 
+    int printAllTransferableAccounts(const char* fileName){
+
+        pugi::xml_document doc;
+
+        int printFlag = 0;
+
+        if(loadBankFileXML(fileName, doc) == 1){
+            std::cout << "printAllUnlockedAccounts: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+             pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            // check all account numbers to see if already used.
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                if(xnAccount.attribute("Locked").as_int() == 0 || xnAccount.attribute("Locked").as_int() == 1){ // accounts that are not locked, 0 = not locked, 1 = a user is currently using, but can still transfer into
+
+                    std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+
+                }
+                    
+                
+            }
+
+            return 0;
+        }
+    }
+
 
     int printAllAccountsExcludeCurr(const char* fileName, std::string &strAccountName, std::string &strAccountNumber){
 
@@ -289,7 +320,7 @@ namespace fileOperations {
             for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
                 //Attributes that belongs to the Element "Account"
 
-                if(xnAccount.attribute("Locked").as_int() == 0 && (strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) != 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) != 0)){ // accounts that are not locked, 0 = not locked.
+                if(xnAccount.attribute("Locked").as_int() != 3 && (strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) != 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) != 0)){ // accounts that are not locked, 0 = not locked.
 
                     std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
 
@@ -393,7 +424,7 @@ namespace fileOperations {
                 //if(xnAccount.attribute("Locked").as_int() == 0 && strcmp(xnAccount.attribute("AccountName").value(), c_accountName) == 0 && strcmp(xnAccount.attribute("AccountNumber").value(), c_accountNumber) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
                 //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
 
-                if((xnAccount.attribute("Locked").as_int() == 0 || xnAccount.attribute("Locked").as_int() == 1) && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+                if(xnAccount.attribute("Locked").as_int() != 3 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
 
                     //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
                     
@@ -556,6 +587,8 @@ namespace fileOperations {
         } else if (iCommand == 3){
             strCommandDesc = "Transfer to; account name: " + strAccountNameDest + ", account number: " + strAccountNumberDest;
             strCommandDestDesc = "Transfer from; account name: " + strAccountName + ", account number: " + strAccountNumber;
+        } else if (iCommand == 99){
+            strCommandDesc = "Account closed.";
         } else {
             std::cout << "addTransactionHistory: No such command: " << iCommand << std::endl;
             return 1;
@@ -730,6 +763,21 @@ namespace fileOperations {
 
                         transferCompleteFlag++;
 
+                    } else if (iCommand == 99){
+                        pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+
+                        pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");                       
+                        pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                        pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+
+
+                        pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                        
+                        pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                        pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                        pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+
+                        transferCompleteFlag++;
                     }
 
                     
@@ -795,6 +843,57 @@ namespace fileOperations {
 
 
         return operationStatus;
+    }
+
+
+    int updateAccountNode(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strAttrName, std::string strAttrVal){
+        pugi::xml_document doc;
+
+        const char* c_strAttrName = &strAttrName[0];
+        const char* c_strAttrVal = &strAttrVal[0];
+
+        //std::cout << "strNodeAttrSet: " << strNodeAttrSet << std::endl;
+
+        int printFlag = 0;
+
+        if(loadBankFileXML(c_fileName, doc) == 1){
+            std::cout << "updateAccountNode: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            // check all account numbers to see if already used.
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                //std::cout << "2. " << xnAccount.attribute("AccountName").value() << " " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                if(strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+                    
+                    xnAccount.attribute(c_strAttrName).set_value(c_strAttrVal);
+
+                    return saveToBankFileXML(c_fileName, doc);             
+
+                }
+                    
+                
+            }
+
+            return 0;
+        }
+    }
+
+    int setAccountLockStatus(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strLockVal){
+        int operationStatus = 0;
+        //updateAccountNode(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strAttrName, std::string strAttrVal)
+        operationStatus = updateAccountNode(c_fileName, strAccountName, strAccountNumber, "Locked", strLockVal);
+
+        if(operationStatus != 0){
+            return operationStatus;
+        }
+
+        // update history
     }
 
     

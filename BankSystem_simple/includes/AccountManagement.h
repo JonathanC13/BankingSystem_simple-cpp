@@ -80,6 +80,8 @@ public:
 
   int transfer();
 
+  int closeAccount(int &acctClosed);
+
   //void printFileName();
 
 private:

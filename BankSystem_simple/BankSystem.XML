@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <BankAccounts>
-	<Account AccountName="Bert" AccountNumber="000123112" Locked="0">
-		<Balance lastUpdatedDate="2023-04-08 22:25 Eastern Daylight Time" currentBalance="1946.003000" />
-		<TransactionHistory count="14">
+	<Account AccountName="Bert" AccountNumber="000123112" Locked="1">
+		<Balance lastUpdatedDate="2023-04-10 20:40 Eastern Daylight Time" currentBalance="24324.000000" />
+		<TransactionHistory count="23">
 			<History Order="1" Date="2023-03-07 21:42 Eastern Standard Time" Desc="Account created.">
 				<Transaction Desc="none">
 					<TransferFrom>
@@ -17,81 +17,12 @@
 					</TransferTo>
 				</Transaction>
 			</History>
-			<History Order="10" Date="2023-04-08 22:23 Eastern Daylight Time" Desc="Transfer to; account name: Jo, account number: 000155554">
-				<Transaction Desc="Transfer to; account name: Jo, account number: 000155554">
-					<TransferFrom>
-						<AccountName>Bert</AccountName>
-						<AccountNumber>000123112</AccountNumber>
-						<AmountFrom>20.19</AmountFrom>
-					</TransferFrom>
-					<TransferTo>
-						<AccountName>Jo</AccountName>
-						<AccountNumber>20.19</AccountNumber>
-						<AmountTo />
-					</TransferTo>
-				</Transaction>
-			</History>
-			<History Order="11" Date="2023-04-08 22:24 Eastern Daylight Time" Desc="Deposit">
-				<Transaction Desc="Deposit">
-					<TransferFrom>
-						<AccountName />
-						<AccountNumber />
-						<AmountFrom />
-					</TransferFrom>
-					<TransferTo>
-						<AccountName>Bert</AccountName>
-						<AccountNumber>000123112</AccountNumber>
-						<AmountTo>2000</AmountTo>
-					</TransferTo>
-				</Transaction>
-			</History>
-			<History Order="12" Date="2023-04-08 22:24 Eastern Daylight Time" Desc="Deposit">
-				<Transaction Desc="Deposit">
-					<TransferFrom>
-						<AccountName />
-						<AccountNumber />
-						<AmountFrom />
-					</TransferFrom>
-					<TransferTo>
-						<AccountName>Bert</AccountName>
-						<AccountNumber>000123112</AccountNumber>
-						<AmountTo>20</AmountTo>
-					</TransferTo>
-				</Transaction>
-			</History>
-			<History Order="13" Date="2023-04-08 22:24 Eastern Daylight Time" Desc="Withdraw">
-				<Transaction Desc="Withdraw">
-					<TransferFrom>
-						<AccountName>Bert</AccountName>
-						<AccountNumber>000123112</AccountNumber>
-						<AmountFrom>21</AmountFrom>
-					</TransferFrom>
-					<TransferTo>
-						<AccountName />
-						<AccountNumber />
-						<AmountTo />
-					</TransferTo>
-				</Transaction>
-			</History>
-			<History Order="14" Date="2023-04-08 22:25 Eastern Daylight Time" Desc="Transfer to; account name: Jo, account number: 000155554">
-				<Transaction Desc="Transfer to; account name: Jo, account number: 000155554">
-					<TransferFrom>
-						<AccountName>Bert</AccountName>
-						<AccountNumber>000123112</AccountNumber>
-						<AmountFrom>54</AmountFrom>
-					</TransferFrom>
-					<TransferTo>
-						<AccountName>Jo</AccountName>
-						<AccountNumber>54</AccountNumber>
-						<AmountTo />
-					</TransferTo>
-				</Transaction>
-			</History>
+			
 		</TransactionHistory>
 	</Account>
 	<Account AccountName="Jo" AccountNumber="000155554" Locked="0">
-		<Balance lastUpdatedDate="2023-04-08 22:25 Eastern Daylight Time" currentBalance="1478.513456" />
-		<TransactionHistory count="11">
+		<Balance lastUpdatedDate="2023-04-10 20:38 Eastern Daylight Time" currentBalance="1981.059670" />
+		<TransactionHistory count="13">
 			<History Order="1" Date="2023-03-07 21:42 Eastern Standard Time" Desc="Account created.">
 				<Transaction Desc="none">
 					<TransferFrom>
@@ -106,34 +37,7 @@
 					</TransferTo>
 				</Transaction>
 			</History>
-			<History Order="10" Date="2023-04-08 22:23 Eastern Daylight Time" Desc="Transfer from; account name: Bert, account number: 000123112">
-				<Transaction Desc="Transfer from; account name: Bert, account number: 000123112">
-					<TransferFrom>
-						<AccountName>Bert</AccountName>
-						<AccountNumber>000123112</AccountNumber>
-						<AmountFrom>20.19</AmountFrom>
-					</TransferFrom>
-					<TransferTo>
-						<AccountName>Jo</AccountName>
-						<AccountNumber>000155554</AccountNumber>
-						<AmountTo>20.19</AmountTo>
-					</TransferTo>
-				</Transaction>
-			</History>
-			<History Order="11" Date="2023-04-08 22:25 Eastern Daylight Time" Desc="Transfer from; account name: Bert, account number: 000123112">
-				<Transaction Desc="Transfer from; account name: Bert, account number: 000123112">
-					<TransferFrom>
-						<AccountName>Bert</AccountName>
-						<AccountNumber>000123112</AccountNumber>
-						<AmountFrom>54</AmountFrom>
-					</TransferFrom>
-					<TransferTo>
-						<AccountName>Jo</AccountName>
-						<AccountNumber>000155554</AccountNumber>
-						<AmountTo>54</AmountTo>
-					</TransferTo>
-				</Transaction>
-			</History>
+			
 		</TransactionHistory>
 	</Account>
 </BankAccounts>
