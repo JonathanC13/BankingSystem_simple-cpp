@@ -567,7 +567,7 @@ namespace fileOperations {
         2: deposit
         3: transfer
     */
-    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest){
+    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string strBalanceSet, std::string strOrgBal, std::string strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest){
 
         pugi::xml_document doc;
 
@@ -778,7 +778,7 @@ namespace fileOperations {
                         pugi::xml_node amountTo = transferTo.append_child("AmountTo");
 
                         transferCompleteFlag++;
-                    }
+                    } 
 
                     
 
@@ -894,7 +894,86 @@ namespace fileOperations {
         }
 
         // update history
+
+        return addTransactionHistory(c_fileName, strAccountName, strAccountName, "0", "0", "0", 99, "", "");
     }
+
+
+    int printAccountHistory(const char* c_fileName, std::string strAccountName, std::string strAccountNumber){
+
+        pugi::xml_document doc;
+
+        const char* c_strAccountName = &strAccountName[0];
+        const char* c_strAccountNumber = &strAccountNumber[0];
+
+        std::cout << "strAccountName: " << strAccountName << ". strAccountNumber: " << strAccountNumber << std::endl;
+
+        int printFlag = 0;
+
+        if(loadBankFileXML(c_fileName, doc) == 1){
+            std::cout << "printAccountHistory: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            // check all account numbers to see if already used.
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                std::cout << "0. " << xnAccount.attribute("AccountName").value() << " " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                if(strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+
+                    std::cout << "in" << std::endl;
+                    
+                    pugi::xml_node xnAccountTransactionHist = xnAccount.child("TransactionHistory");
+
+                    for(pugi::xml_node xnAccountHistory : xnAccountTransactionHist.children("History")){
+                        std::cout << "====== History ======" << std::endl;
+                        std::cout << "=== History attr ===" << std::endl;
+                        std::cout << "Order: " << xnAccountHistory.attribute("Order").value() << ". Date: " << xnAccountHistory.attribute("Date").value() << ". Desc: " << xnAccountHistory.attribute("Desc").value() << std::endl;
+                        std::cout << "===\\ History attr ===" << std::endl;
+
+                        pugi::xml_node xnTransaction = xnAccountHistory.child("Transaction");
+                        pugi::xml_node xnTransFrom = xnTransaction.child("TransferFrom");
+                        pugi::xml_node xnTransTo = xnTransaction.child("TransferTo");
+
+                        std::cout << "=== History details ===" << std::endl;
+                        std::cout << "Transaction: " << xnTransaction.attribute("Desc").value() << std::endl;
+
+                        std::cout << "=== TransferFrom ===" << std::endl;
+                        std::cout << "AccountName: " << xnTransFrom.child("AccountName").text().get() << std::endl;
+                        std::cout << "AccountNumber: " << xnTransFrom.child("AccountNumber").text().get() << std::endl;
+                        std::cout << "AmountFrom: " << xnTransFrom.child("AmountFrom").text().get() << std::endl;
+                        std::cout << "===\\ TransferTo ===" << std::endl;
+
+                        std::cout << "=== TransferTo ===" << std::endl;
+                        std::cout << "AccountName: " << xnTransTo.child("AccountName").text().get() << std::endl;
+                        std::cout << "AccountNumber: " << xnTransTo.child("AccountNumber").text().get() << std::endl;
+                        std::cout << "AmountTo: " << xnTransTo.child("AmountTo").text().get() << std::endl;
+                        std::cout << "===\\ TransferFrom ===" << std::endl;
+                        std::cout << "===\\ History details ===" << std::endl;
+
+
+                        std::cout << "======\\ History ======\n\n" << std::endl;
+
+                    }
+
+                           
+
+                }
+                    
+                
+            }
+
+            return 0;
+        }
+    }
+
+
+
+
 
     
     void testAdd(){

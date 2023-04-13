@@ -39,6 +39,13 @@ BankSystem_simple.cpp
 
 AccountManagement
   1. new operation to neatly print all history. Asc by date, just order of how it was saved.
+
+printAccountHistory
+better print format
+
+Make command sections clearer with divisions like 
+====== account ======
+====/ account ====
 */
 
 // Close account: ask to withdraw all money or transfer. If withdraw, then set to 0 and lock account (Locked = 3). If transfer, transfer to valid account then lock.
@@ -98,6 +105,7 @@ int AccountManagement::AccountCommandCenter(){
     std::cout << "2: Withdraw" << std::endl;
     std::cout << "3: Deposit" << std::endl;
     std::cout << "4: Transfer" << std::endl;
+    std::cout << "5: Print account history" << std::endl;
     std::cout << "99: Close Account" << std::endl;
     std::cout << "-----------------" << std::endl;
 
@@ -120,6 +128,10 @@ int AccountManagement::AccountCommandCenter(){
         break;
       case 4:
         operationStatus = transfer();
+        break;
+      case 5: 
+        std::cout << "printAccountHistory" << std::endl;
+        operationStatus = fileOperations::printAccountHistory(this->strFileName, this->strAccountName, this->strAccountNumber);
         break;
       case 99:
         operationStatus = closeAccount(accountClosed);

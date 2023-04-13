@@ -44,9 +44,11 @@ namespace fileOperations {
 
     //int updateTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string strNodeDataSet);
 
-    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest);
+    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string strBalanceSet, std::string strOrgBal, std::string strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest);
 
     int setAccountLockStatus(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strLockVal);
+
+    int printAccountHistory(const char* c_fileName, std::string strAccountName, std::string strAccountNumber);
 
     int modify_base();
 };
