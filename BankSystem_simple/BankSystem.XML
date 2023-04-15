@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <BankAccounts>
-	<Account AccountName="Bert" AccountNumber="000123112" Locked="1">
-		<Balance lastUpdatedDate="2023-04-12 19:44 Eastern Daylight Time" currentBalance="823.000000" />
+	<Account AccountName="Bert" AccountNumber="000123112" Locked="1" lastUpdatedDate="2023-04-12 19:44 Eastern Daylight Time">
+		<Balance currentBalance="823.000000" />
 		<TransactionHistory count="26">
 			<History Order="1" Date="2023-03-07 21:42 Eastern Standard Time" Desc="Account created.">
-				<Transaction Desc="none">
+				<Transaction Desc="none" BalanceBefore = "0" BalanceAfter ="0">
 					<TransferFrom>
 						<AccountName />
 						<AccountNumber />
@@ -61,11 +61,11 @@
 			</History>
 		</TransactionHistory>
 	</Account>
-	<Account AccountName="Jo" AccountNumber="000155554" Locked="0">
-		<Balance lastUpdatedDate="2023-04-12 19:44 Eastern Daylight Time" currentBalance="34981.627670" />
+	<Account AccountName="Jo" AccountNumber="000155554" Locked="0" lastUpdatedDate="2023-04-12 19:44 Eastern Daylight Time">
+		<Balance currentBalance="34981.627670" />
 		<TransactionHistory count="14">
 			<History Order="1" Date="2023-03-07 21:42 Eastern Standard Time" Desc="Account created.">
-				<Transaction Desc="none">
+				<Transaction Desc="none" BalanceBefore = "0" BalanceAfter ="0">
 					<TransferFrom>
 						<AccountName />
 						<AccountNumber />

@@ -13,11 +13,8 @@ g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp inc
 // if using includes/eg.h, in the compile then need to explicitly reference the cpp the .h file references.
 */
 
-/* remote2 3
-TODO:
+/* 
 
-3. Select account -- Need #2 completed first. Initialize object when valid account info entered by user
-4. Re-activate account: removing the 'X' last character from the file name, so that selectAccount function will display it.
 
 git
 Branch from main
@@ -30,7 +27,7 @@ to merge, switch to main and Merge from, then sync to git
 'Account' attribute 'Locked':
     0: unlocked
     1: in use
-    2: locked (archived)
+    3: locked (archived)
 
 */
 

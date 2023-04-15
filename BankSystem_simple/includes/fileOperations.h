@@ -74,15 +74,22 @@ namespace fileOperations {
 
     int getBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceRet);
 
-    int setBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand);
+    //int setBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand);
 
     //int getTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNum, std::string strNode, std::string &strNodeDataRet);
 
     //int updateTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string strNodeDataSet);
+    
+    //int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string strBalanceSet, std::string strOrgBal, std::string strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest);
 
-    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string strBalanceSet, std::string strOrgBal, std::string strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest);
+    int commitWithdraw(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strChangeAmt, std::string strBalanceOg);
 
+    int commitDeposit(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strChangeAmt, std::string strBalanceOg);
 
+    int commitTransfer(const char* &fileName, std::string &strAccountNameSrc, std::string &strAccountNumberSrc, std::string &strCurrBalSrc, std::string &strNewBalSrc, std::string &strAccountNameDest, std::string &strAccountNumberDest, std::string &strCurrBalDest, std::string &strNewBalDest, std::string &strTransferAmt);
+
+    int closeAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber);
+    
     /*
     Purpose:
     Params:
@@ -98,6 +105,8 @@ namespace fileOperations {
     int setAccountLockStatus(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strLockVal);
 
     int printAccountHistory(const char* c_fileName, std::string strAccountName, std::string strAccountNumber);
+
+
 
     int modify_base();
 };

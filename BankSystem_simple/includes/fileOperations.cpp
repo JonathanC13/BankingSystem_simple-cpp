@@ -176,9 +176,9 @@ namespace fileOperations {
             nodeAccount.append_attribute("AccountName") = cAccountName;
             nodeAccount.append_attribute("AccountNumber") = cAccountNumber;
             nodeAccount.append_attribute("Locked") = 0; // default 0 for unlocked
+            nodeAccount.append_attribute("lastUpdatedDate") = strDate;
 
             pugi::xml_node balanceElement = nodeAccount.append_child("Balance");
-            balanceElement.append_attribute("lastUpdatedDate") = strDate;
             balanceElement.append_attribute("currentBalance") = 0; // Inital balance = 0
             //balanceElement.append_child(pugi::node_pcdata).set_value("");
 
@@ -192,6 +192,8 @@ namespace fileOperations {
 
             pugi::xml_node transaction = History.append_child("Transaction");
             transaction.append_attribute("Desc") = "none"; // usually withdraw or deposit
+            transaction.append_attribute("BalanceBefore") = 0; // The balance before this transaction has taken place
+            transaction.append_attribute("BalanceAfter") = 0; // The balance after this transaction has taken place
 
             pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
             pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
@@ -564,7 +566,7 @@ namespace fileOperations {
         int printFlag = 0;
 
         if(loadBankFileXML(c_fileName, doc) == 1){
-            std::cout << "updateTargetNodeAttrLevel1: Could not load or parse XML file." << std::endl;
+            std::cout << ">> updateTargetNodeAttrLevel1: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -601,7 +603,7 @@ namespace fileOperations {
         2: deposit
         3: transfer
     */
-    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string strBalanceSet, std::string strOrgBal, std::string strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest){
+    int addTransactionHistory(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string strBalanceSet, std::string strOrgBal, std::string strChangeAmt, int iCommand, std::string strAccountNameDest, std::string strAccountNumberDest, std::string strSetBalDest, std::string strOrgBalDest){
 
         pugi::xml_document doc;
 
@@ -638,7 +640,7 @@ namespace fileOperations {
 
         } else {
 
-             pugi::xml_node bankAccounts = doc.child("BankAccounts");
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
 
             
             for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
@@ -668,6 +670,8 @@ namespace fileOperations {
                         
                         pugi::xml_node transaction = History.append_child("Transaction");
                         transaction.append_attribute("Desc") = &strCommandDestDesc[0]; 
+                        transaction.append_attribute("BalanceBefore") = &strOrgBalDest[0]; 
+                        transaction.append_attribute("BalanceAfter") = &strSetBalDest[0]; 
 
                         pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
                         pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
@@ -717,6 +721,8 @@ namespace fileOperations {
                     
                     pugi::xml_node transaction = History.append_child("Transaction");
                     transaction.append_attribute("Desc") = &strCommandDesc[0]; 
+                    transaction.append_attribute("BalanceBefore") = &strOrgBal[0]; 
+                    transaction.append_attribute("BalanceAfter") = &strBalanceSet[0]; 
 
                     if (iCommand == 1){
                         std::cout << "withdraw" << std::endl;
@@ -811,7 +817,7 @@ namespace fileOperations {
                         pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
                         pugi::xml_node amountTo = transferTo.append_child("AmountTo");
 
-                        transferCompleteFlag++;
+                        break;
                     } 
 
                     
@@ -863,15 +869,15 @@ namespace fileOperations {
         //std::cout << "operationStatus1: " << operationStatus << std::endl;
 
         if (operationStatus == 0){
-            // update time stamp
-            operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, strAccountNumber, "Balance", "lastUpdatedDate", strDate);         
+            // update time stamp    
+            operationStatus = updateAccountNode(fileName, strAccountName, strAccountNumber, "lastUpdatedDate", strDate);
         }
 
         if (operationStatus == 0 && iCommand != 3 ){
             
             //std::cout << "history" << std::endl;
             // add transaction history
-            operationStatus = addTransactionHistory(fileName, strAccountName, strAccountNumber, strBalanceSet, strOrgBal, strChangeAmt, iCommand, "", "");
+            operationStatus = addTransactionHistory(fileName, strAccountName, strAccountNumber, strBalanceSet, strOrgBal, strChangeAmt, iCommand, "", "","0","0");
             
         }
 
@@ -941,9 +947,83 @@ namespace fileOperations {
 
         // update history
         if (strLockVal == "3"){ // 3 is locked
-            return addTransactionHistory(c_fileName, strAccountName, strAccountName, "0", "0", "0", 99, "", "");
+            return addTransactionHistory(c_fileName, strAccountName, strAccountName, "0", "0", "0", 99, "", "","0","0");
         } else {
             return operationStatus;
+        }
+    }
+
+    int closeAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber){
+
+        char cDate[50];
+        getLocalTime(&cDate[0], sizeof(cDate)-1);
+        std::string strDate = std::string(cDate);
+
+        std::string strBalanceRet;
+        if(getBalance(c_fileName, strAccountName, strAccountNumber, strBalanceRet) == 1){
+            return 1;
+        }
+
+        pugi::xml_document doc;
+
+        if(loadBankFileXML(c_fileName, doc) == 1){
+            std::cout << ">> closeAccount: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                if(strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+                    
+                    xnAccount.attribute("Locked").set_value("3");
+
+                    // add transaction history
+                    pugi::xml_node transactionHistory = xnAccount.child("TransactionHistory");
+
+                    // update attribute count
+                    char * p1;
+                    transactionHistory.attribute("count").set_value(strtol(transactionHistory.attribute("count").value(), &p1,10) + 1);
+
+                    // Add new tranaction history section
+                    pugi::xml_node History = transactionHistory.append_child("History");
+
+                    char * p;
+
+                    History.append_attribute("Order") = transactionHistory.attribute("count").value();
+                    History.append_attribute("Date") = cDate;
+
+                    History.append_attribute("Desc") = "Close Account";
+                    
+                    pugi::xml_node transaction = History.append_child("Transaction");
+                    transaction.append_attribute("Desc") = "Close Account"; 
+                    transaction.append_attribute("BalanceBefore") = &strBalanceRet[0]; 
+                    transaction.append_attribute("BalanceAfter") = &strBalanceRet[0]; 
+
+                    pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+
+                    pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");                       
+                    pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                    pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+
+
+                    pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                    
+                    pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                    pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                    pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+
+                    return saveToBankFileXML(c_fileName, doc);             
+
+                }
+                    
+                
+            }
+
+            return 1;
         }
     }
 
@@ -1020,9 +1100,325 @@ namespace fileOperations {
         }
     }
 
+    int commitWithdraw(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strChangeAmt, std::string strBalanceOg){
+        char cDate[50];
+        getLocalTime(&cDate[0], sizeof(cDate)-1);
+        //std::string strDate = std::string(cDate);
 
 
 
+        const char* cBal = &strBalanceSet[0];
+
+        pugi::xml_document doc;
+
+        if(loadBankFileXML(fileName, doc) == 1){
+            std::cout << "commitWithdraw: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                // find the target account
+                if(strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+
+                    xnAccount.attribute("lastUpdatedDate").set_value(cDate);
+
+                    // change balance
+                    xnAccount.child("Balance").attribute("currentBalance").set_value(cBal);     
+
+                    // add history
+                    // get TransactionHistory Node
+                    pugi::xml_node transactionHistory = xnAccount.child("TransactionHistory");
+
+                    // update attribute count
+                    char * p1;
+                    transactionHistory.attribute("count").set_value(strtol(transactionHistory.attribute("count").value(), &p1,10) + 1);
+
+                    // Add new tranaction history section
+                    pugi::xml_node History = transactionHistory.append_child("History");
+
+                    char * p;
+
+                    History.append_attribute("Order") = transactionHistory.attribute("count").value();
+                    History.append_attribute("Date") = cDate;
+
+                    History.append_attribute("Desc") = "Withdraw";
+                    
+                    pugi::xml_node transaction = History.append_child("Transaction");
+                    transaction.append_attribute("Desc") = "Withdraw"; 
+                    transaction.append_attribute("BalanceBefore") = &strBalanceOg[0]; 
+                    transaction.append_attribute("BalanceAfter") = &strBalanceSet[0]; 
+
+                    // withdraw
+                    pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+                    pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
+                    fromAccountName.text() = &strAccountName[0];
+
+                    pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                    fromAccountNumber.text() = &strAccountNumber[0];
+
+                    pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+                    amountFrom.text() = &strChangeAmt[0];
+
+
+                    pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                    
+                    pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                    toAccountName.text() = "";
+
+                    pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                    toAccountNumber.text() = "";
+
+                    pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+                    toAccountNumber.text() = "";
+                    std::cout << "withdraw end" << std::endl;
+                    
+                          
+                    return saveToBankFileXML(fileName, doc); 
+                }
+                    
+                
+            }
+
+
+        }
+        return 1;
+           
+    }
+
+    int commitDeposit(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strChangeAmt, std::string strBalanceOg){
+        char cDate[50];
+        getLocalTime(&cDate[0], sizeof(cDate)-1);
+        //std::string strDate = std::string(cDate);
+
+
+        const char* cBal = &strBalanceSet[0];
+
+        pugi::xml_document doc;
+
+        if(loadBankFileXML(fileName, doc) == 1){
+            std::cout << "commitWithdraw: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                // find the target account
+                if(strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+
+                    xnAccount.attribute("lastUpdatedDate").set_value(cDate);
+
+                    // change balance
+                    xnAccount.child("Balance").attribute("currentBalance").set_value(cBal);     
+
+                    // add history
+                    // get TransactionHistory Node
+                    pugi::xml_node transactionHistory = xnAccount.child("TransactionHistory");
+
+                    // update attribute count
+                    char * p1;
+                    transactionHistory.attribute("count").set_value(strtol(transactionHistory.attribute("count").value(), &p1,10) + 1);
+
+                    // Add new tranaction history section
+                    pugi::xml_node History = transactionHistory.append_child("History");
+
+                    char * p;
+
+                    History.append_attribute("Order") = transactionHistory.attribute("count").value();
+                    History.append_attribute("Date") = cDate;
+
+                    History.append_attribute("Desc") = "Deposit";
+                    
+                    pugi::xml_node transaction = History.append_child("Transaction");
+                    transaction.append_attribute("Desc") = "Deposit"; 
+                    transaction.append_attribute("BalanceBefore") = &strBalanceOg[0]; 
+                    transaction.append_attribute("BalanceAfter") = &strBalanceSet[0]; 
+
+                    //deposit
+                    pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+                    pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
+                    fromAccountName.text() = "";
+
+                    pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                    fromAccountNumber.text() = "";
+
+                    pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+                    amountFrom.text() = "";
+
+
+                    pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                    
+                    pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                    toAccountName.text() = &strAccountName[0];
+
+                    pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                    toAccountNumber.text() = &strAccountNumber[0];
+
+                    pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+                    amountTo.text() = &strChangeAmt[0];
+
+                    return saveToBankFileXML(fileName, doc); 
+                }
+            }
+        }
+        return 1;
+    }
+
+    int commitTransfer(const char* &fileName, std::string &strAccountNameSrc, std::string &strAccountNumberSrc, std::string &strCurrBalSrc, std::string &strNewBalSrc, std::string &strAccountNameDest, std::string &strAccountNumberDest, std::string &strCurrBalDest, std::string &strNewBalDest, std::string &strTransferAmt){
+        char cDate[50];
+        getLocalTime(&cDate[0], sizeof(cDate)-1);
+        //std::string strDate = std::string(cDate);
+
+        std::string strCommandSrcDesc = "";
+        std::string strCommandDestDesc = "";
+
+        strCommandSrcDesc = "Transfer to; account name: " + strAccountNameDest + ", account number: " + strAccountNumberDest;
+        strCommandDestDesc = "Transfer from; account name: " + strAccountNameSrc + ", account number: " + strAccountNumberSrc;
+
+        int iChangeCnt = 0;
+
+        pugi::xml_document doc;
+
+        if(loadBankFileXML(fileName, doc) == 1){
+            std::cout << "commitWithdraw: Could not load or parse XML file." << std::endl;
+            return 1; // some error
+
+        } else {
+
+            pugi::xml_node bankAccounts = doc.child("BankAccounts");
+
+            for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
+                //Attributes that belongs to the Element "Account"
+
+                // find the target source account
+                if(strAccountNameSrc.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumberSrc.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+
+                    xnAccount.attribute("lastUpdatedDate").set_value(cDate);
+
+                    // change balance
+                    xnAccount.child("Balance").attribute("currentBalance").set_value(&strCurrBalSrc[0]);
+
+                    // add history
+                    // get TransactionHistory Node
+                    pugi::xml_node transactionHistory = xnAccount.child("TransactionHistory");
+
+                    // update attribute count
+                    char * p1;
+                    transactionHistory.attribute("count").set_value(strtol(transactionHistory.attribute("count").value(), &p1,10) + 1);
+
+                    // Add new tranaction history section
+                    pugi::xml_node History = transactionHistory.append_child("History");
+
+                    char * p;
+
+                    History.append_attribute("Order") = transactionHistory.attribute("count").value();
+                    History.append_attribute("Date") = cDate;
+
+                    History.append_attribute("Desc") = &strAccountNameSrc[0];
+                    
+                    pugi::xml_node transaction = History.append_child("Transaction");
+                    transaction.append_attribute("Desc") = &strCommandSrcDesc[0]; 
+                    transaction.append_attribute("BalanceBefore") = &strCurrBalSrc[0]; 
+                    transaction.append_attribute("BalanceAfter") = &strNewBalSrc[0]; 
+
+                    pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+                    pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
+                    fromAccountName.text() = &strAccountNameSrc[0];
+
+                    pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                    fromAccountNumber.text() = &strAccountNumberSrc[0];
+
+                    pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+                    amountFrom.text() = &strTransferAmt[0];
+
+
+                    pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                    
+                    pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                    toAccountName.text() = &strAccountNameDest[0];
+
+                    pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                    toAccountNumber.text() = &strAccountNumberDest[0];
+
+                    pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+                    toAccountNumber.text() = &strTransferAmt[0];
+
+                    iChangeCnt ++;
+                }
+
+                // find the target destination account
+                if(strAccountNameDest.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumberDest.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+
+                    xnAccount.attribute("lastUpdatedDate").set_value(cDate);
+
+                    // change balance
+                    xnAccount.child("Balance").attribute("currentBalance").set_value(&strNewBalDest[0]);
+
+                    // add history
+                    // get TransactionHistory Node
+                    pugi::xml_node transactionHistory = xnAccount.child("TransactionHistory");
+
+                    // update attribute count
+                    char * p1;
+                    transactionHistory.attribute("count").set_value(strtol(transactionHistory.attribute("count").value(), &p1,10) + 1);
+
+                    // Add new tranaction history section
+                    pugi::xml_node History = transactionHistory.append_child("History");
+
+                    char * p;
+
+                    History.append_attribute("Order") = transactionHistory.attribute("count").value();
+                    History.append_attribute("Date") = cDate;
+
+                    History.append_attribute("Desc") = &strCommandDestDesc[0];
+                    
+                    pugi::xml_node transaction = History.append_child("Transaction");
+                    transaction.append_attribute("Desc") = &strCommandDestDesc[0]; 
+                    transaction.append_attribute("BalanceBefore") = &strCurrBalDest[0]; 
+                    transaction.append_attribute("BalanceAfter") = &strNewBalDest[0]; 
+
+                    pugi::xml_node transferFrom = transaction.append_child("TransferFrom");
+                    pugi::xml_node fromAccountName = transferFrom.append_child("AccountName");
+                    fromAccountName.text() = &strAccountNameSrc[0];
+
+                    pugi::xml_node fromAccountNumber = transferFrom.append_child("AccountNumber");
+                    fromAccountNumber.text() = &strAccountNumberSrc[0];
+
+                    pugi::xml_node amountFrom = transferFrom.append_child("AmountFrom");
+                    amountFrom.text() = &strTransferAmt[0];
+
+
+                    pugi::xml_node transferTo = transaction.append_child("TransferTo");
+                    
+                    pugi::xml_node toAccountName = transferTo.append_child("AccountName");
+                    toAccountName.text() = &strAccountNameDest[0];
+
+                    pugi::xml_node toAccountNumber = transferTo.append_child("AccountNumber");
+                    toAccountNumber.text() = &strAccountNumberDest[0];
+
+                    pugi::xml_node amountTo = transferTo.append_child("AmountTo");
+                    amountTo.text() = &strTransferAmt[0];
+
+
+                    iChangeCnt ++;
+                }
+            }
+        }
+
+        if (iChangeCnt == 2){
+            return saveToBankFileXML(fileName, doc); 
+        } else {
+            return 1;
+        }
+    }
 
     
     void testAdd(){
