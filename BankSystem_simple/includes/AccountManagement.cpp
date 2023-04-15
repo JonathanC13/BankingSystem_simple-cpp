@@ -773,7 +773,7 @@ int AccountManagement::closeAccount(int &acctClosed){
 
           if (operationStatus == 0){
             acctClosed = 0; // successfully closed
-            std::cout << "Account successfully closed."
+            std::cout << "Account successfully closed.";
           }
 
           continueFlag = 0;
