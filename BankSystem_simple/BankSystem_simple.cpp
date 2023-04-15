@@ -15,16 +15,7 @@ g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp inc
 
 /* remote2 3
 TODO:
-test
-2. Account Management class: - here
-    Constructor:  
-        only asks for file name
-    Functions:
-        Exit
-        Request balance
-        Deposit
-        Withdraw
-        Close account -> are you sure confirmation. Not deleting the file, just add a flag to the Account element that it is locked
+
 3. Select account -- Need #2 completed first. Initialize object when valid account info entered by user
 4. Re-activate account: removing the 'X' last character from the file name, so that selectAccount function will display it.
 
@@ -84,17 +75,17 @@ int main(){
 
     //operationStatus = createAccount("BankSystem.XML");
 
+    std::cout << "==================== Banking system ====================\n" << std::endl;
 
     while(continueFlag == 1){ // 
 
-        std::cout << "===== Banking system =====" << std::endl << std::endl;
+        std::cout << "\n========== Options menu ==========" << std::endl;
 
         // display options:
-        std::cout << "Options menu:" << std::endl;
         std::cout << "0: Exit" << std::endl;
         std::cout << "1: Create account" << std::endl;
         std::cout << "2: Select account" << std::endl;
-        std::cout << "3: Re-activate account" << std::endl;
+        std::cout << "3: Print all accounts" << std::endl;
         std::cout << "-----------------" << std::endl;
 
         // get int from user
@@ -103,35 +94,47 @@ int main(){
         // When an integer is entered is entered, perform action if a valid option or prompt user again to enter a valid option's integer.
         switch(selectedOption){
             case 0:
+                operationStatus = 0;
                 continueFlag = 0;
                 break;
             case 1:
                 // create account
-                std::cout << "Initializing account creation." << std::endl;
+                std::cout << "========== Initializing account creation ==========\n" << std::endl;
                 operationStatus = createAccount(fileName);
 
                 if (operationStatus == 0){
-                    std::cout << "Account created successfully." << std::endl;
+                    std::cout << "> Account created successfully." << std::endl;
                 } else {
-                    std::cout << "Account creation error." << std::endl;
+                    std::cout << "> Account creation error." << std::endl;
                 }
+
+                std::cout << "\n==========\\ Initializing account creation ==========" << std::endl;
 
                 break;
             case 2:
                 // select account
+                std::cout << "========== Account selection ==========\n" << std::endl;
+
                 operationStatus = selectAccount(fileName);
+
+                std::cout << "\n==========\\ Account selection ==========" << std::endl;
                 break;
             case 3:
-                // Re-activate account
+                // Print all accounts
+                std::cout << "========== Print all accounts ==========\n" << std::endl;
+
+                operationStatus = printAllAccounts(fileName);
+
+                std::cout << "\n==========\\ Print all accounts ==========" << std::endl;
                 break;
             default:
-                std::cout << "Error, user has entered a number for an option that does not exist." << std::endl << std::endl;
+                std::cout << ">> Error, user has entered a number for an option that does not exist." << std::endl << std::endl;
                 break;
         }
 
 
         if(operationStatus == 1){
-            std::cout << "Issue detected, ending session now." << std::endl;
+            std::cout << ">> main: Issue detected, ending session now." << std::endl;
             break;
         }
 
@@ -139,12 +142,20 @@ int main(){
     }
     
         
-    
+    std::cout << "\n====================\\ Banking system ====================" << std::endl;
 
     return 0;
 }
 
-// Generate a random int for the account number and store into reference variable [x]
+
+/*
+Purpose:
+    Generate a random 9 digit account number and store into reference variable
+Params:
+  std::string& strAccountNumber: reference variable for the 9 digit account number
+Return:
+  N/A
+*/
 void randomAccountNumber(std::string& strAccountNumber){
 
 
@@ -176,13 +187,19 @@ Purpose:
 Parameters:
     N/A
 Return:
-    int: 0 = 
-*/ // TODO
+    int
+    0:
+    1: 
+*/
 int selectAccount(const char* fileName){
 
     std::string strInAccountName;
     int iInAccountNumber;
     std::string strAccountNumber;
+
+    int operationStatus = -1;
+    int iValidAcc = 1;
+    int retCode = 1;
 
     size_t padLeading = 9;
 
@@ -198,7 +215,7 @@ int selectAccount(const char* fileName){
             return 1;
         } 
 
-        std::cout << "========================" << std::endl;
+        std::cout << "------------------------" << std::endl;
         std::cout << "Enter \"-1\" to exit Account Selection. \n" << std::endl;
 
         // prompt user for account name
@@ -208,7 +225,7 @@ int selectAccount(const char* fileName){
 
         //std::cout << "user entered: " << strInAccountName << std::endl;
         if(strInAccountName.compare("-1") == 0){
-            break;
+            return 0;
         }
 
         // prompt user for the associated account number
@@ -218,32 +235,47 @@ int selectAccount(const char* fileName){
         strAccountNumber = std::to_string(iInAccountNumber);
         //std::cout << "user entered: " << strAccountNumber << std::endl;
         if(strAccountNumber.compare("-1") == 0){
-            break;
+            return 0;
         }
 
         inputHandler::padLeadingZeros(padLeading, strAccountNumber);
 
         std::cout << "\n\n";
 
-        
-
-
         // check if valid account name and number combination
-         // 0 for true
+        // 0 for true
         // 1 for false
         // 2 for error
-        int i = fileOperations::getFlagValidAccount(fileName, strInAccountName, strAccountNumber);
-        std::cout << "ret: " << i << std::endl;
+        iValidAcc = fileOperations::getFlagValidAccount(fileName, strInAccountName, strAccountNumber);
+        //std::cout << "ret: " << i << std::endl;
 
-// TODO here, once a valid account has been chosen, then create an AccountManagement object that will loop internally to prompt the user for commands to interact with the account
-// Lock the account with "Locked" = 1 to indicate that it is in use. Make sure user cannot an account that is not 0
-//xnAccount.attribute("Locked").set_value("1");
-
-// When exit, need to set "Locked" = 0,
-        break;
+        if(iValidAcc == 2){
+            return 1;
+        } else if(iValidAcc == 0){
+            break;
+        }
+        // else 1, ask for account again
+ 
     }
 
-    return 0;
+    if(iValidAcc == 0){
+        // When selecting account, need to set "Locked" = 1 to indicate account is currently being used.
+        operationStatus = fileOperations::setAccountLockStatus(fileName, strInAccountName, strAccountNumber, "1");
+        if (operationStatus != 0){
+            return operationStatus;
+        } else {
+            
+            // if setting "Locked" == 1 successful, then create AccountManagment object.
+            // Once a valid account has been chosen, then create an AccountManagement object that will loop internally to prompt the user for commands to interact with the account
+            AccountManagement am = AccountManagement(fileName, strInAccountName, strAccountNumber, retCode);
+        }
+
+
+        // When exit, need to set "Locked" = 0,
+        return fileOperations::setAccountLockStatus(fileName, strInAccountName, strAccountNumber, "0");
+    }
+
+    return retCode;
 
 }
 
@@ -257,6 +289,7 @@ Return:
     int: For status of account creation
         0; success, file created.
         1; failure to create the file for the account.
+        2; exit.
 */
 int createAccount(const char* fileName){
 
@@ -265,9 +298,13 @@ int createAccount(const char* fileName){
     // Ask for account name
     std::string strAccountName;
 
-    
+    std::cout << "Enter \"-1\" to exit account creation.\n" << std::endl;
     std::cout << "Enter desired Account Name: ";
     inputHandler::getUserInput(strAccountName);
+
+    if (strAccountName.compare("-1")){
+        return 2;
+    }
 
     // randomly generate account number
     std::string ac;
@@ -280,18 +317,19 @@ int createAccount(const char* fileName){
 
     }
 
-    std::cout << "Acc Number check value: " << accNumChk << std::endl;
+    //std::cout << "Acc Number check value: " << accNumChk << std::endl;
 
     if (accNumChk == 2){
         return 1;
+    } else {
+        // Populate file with XML and row elements to structure the internals of the file.
+        return fileOperations::addAccount(fileName, strAccountName, ac);
     }
-
-
-    // Populate file with XML and row elements to structure the internals of the file.
-    return fileOperations::addAccount(fileName, strAccountName, ac);
 }
 
-
+int printAllAccounts(const char* fileName){
+    return fileOperations::printAllAccounts(fileName);
+}
 
 int reactivateAccount(){
 

@@ -162,6 +162,14 @@ namespace inputHandler {
         return ldVal;
     }
 
+    /*
+    Purpose:
+        Prompt user to enter characters
+    Parameters: 
+        string strUserIn; Reference variable for user input
+    Return:
+        N/A
+    */
     void getUserInput(std::string& strUserIn){
 
         std::getline(std::cin,strUserIn);

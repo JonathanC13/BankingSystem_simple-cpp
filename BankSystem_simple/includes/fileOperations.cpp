@@ -99,7 +99,7 @@ namespace fileOperations {
             //std::cout << "XML committed." << std::endl;
             return 0;
         } else {
-            //std::cout << "XML not committed." << std::endl;
+            std::cout << ">> saveToBankFileXML: XML not committed." << std::endl;
             return 1;
         }
         
@@ -130,15 +130,26 @@ namespace fileOperations {
     }
 
 
-    // takes the file name and account name that desires to be created. Load the XML, add the "account" as child to the root element, "BankAccounts".
+    /*
+    Purpose:
+        Save the account name and account number to the XML file that contains the bank accounts. Load the XML and then add the "account" as child to the root element "BankAccounts".
+    Params:
+        const char* fileName: file name of the XML file that contains the bank accounts.
+        std::string& accountName: The desired account name for the new account.
+        std::string& accountNumber: The desired account number for the new account.
+    Return:
+        int
+        0: XML document successfully saved with changes.
+        1: Error: (1) When loading the XML file. (2) When attempting to save changes.
+    */
     int addAccount(const char* fileName, std::string& accountName, std::string& accountNumber){
-        std::cout << "Adding account." << std::endl;
+        //std::cout << "Adding account." << std::endl;
         pugi::xml_document doc;
 
         char* cAccountName = &accountName[0];
         char* cAccountNumber = &accountNumber[0];
 
-        std::cout << "a name: " << accountName << std::endl;
+        //std::cout << "a name: " << accountName << std::endl;
 
         for (int i = 0; i < 9; i++){
             std::cout << accountNumber[i] << "|"; 
@@ -146,7 +157,7 @@ namespace fileOperations {
         std::cout<< std::endl;
 
         if(loadBankFileXML(fileName, doc) == 1){
-            //std::cout << "Could not load or parse XML file." << std::endl;
+            std::cout << ">> addAccount: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -211,12 +222,14 @@ namespace fileOperations {
 
     int printAllAccounts(const char* fileName){
 
+        std::string strLockedDesc;
+
         pugi::xml_document doc;
 
         int printFlag = 0;
 
         if(loadBankFileXML(fileName, doc) == 1){
-            std::cout << "printAllAccounts: Could not load or parse XML file." << std::endl;
+            std::cout << ">> printAllAccounts: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -226,9 +239,9 @@ namespace fileOperations {
             // check all account numbers to see if already used.
             for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
                 //Attributes that belongs to the Element "Account"
-
+                strLockedDesc = xnAccount.attribute("Locked").value();
                 
-                std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                std::cout << "- " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << ". Locked status: " << strLockedDesc << std::endl;
 
                 
                     
@@ -259,7 +272,7 @@ namespace fileOperations {
 
                 if(xnAccount.attribute("Locked").as_int() == 0){ // accounts that are not locked, 0 = not locked.
 
-                    std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                    std::cout << "- " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
 
                 }
                     
@@ -290,7 +303,7 @@ namespace fileOperations {
 
                 if(xnAccount.attribute("Locked").as_int() == 0 || xnAccount.attribute("Locked").as_int() == 1){ // accounts that are not locked, 0 = not locked, 1 = a user is currently using, but can still transfer into
 
-                    std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                    std::cout << "- " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
 
                 }
                     
@@ -309,7 +322,7 @@ namespace fileOperations {
         int printFlag = 0;
 
         if(loadBankFileXML(fileName, doc) == 1){
-            std::cout << "printAllAccountsExcludeCurr: Could not load or parse XML file." << std::endl;
+            std::cout << ">> printAllAccountsExcludeCurr: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -322,7 +335,7 @@ namespace fileOperations {
 
                 if(xnAccount.attribute("Locked").as_int() != 3 && (strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) != 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) != 0)){ // accounts that are not locked, 0 = not locked.
 
-                    std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                    std::cout << "- " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
 
                 }
                     
@@ -333,6 +346,17 @@ namespace fileOperations {
         }
     }
 
+    /*
+    Purpose:
+        Check through accounts to see that the specified 9 digit account number already exists
+    Params:
+        const char* cAccountNumber: 9 digit account number to check existence.
+        const char* fileName: the file name of the XML file that contains the accounts
+    Return:
+        0: The 9 digit account number exists and is in use.
+        1: The account number is not in use.
+        2: When attempting to load the XML file, an error occurred.
+    */
     int ifExistsAccountNumber(const char* cAccountNumber, const char* fileName){
 
         std::string strAccountNumber_attr = "AccountNumber";
@@ -340,7 +364,7 @@ namespace fileOperations {
         pugi::xml_document doc;
 
         if(loadBankFileXML(fileName, doc) == 1){
-            std::cout << "ifExistsAccountNumber: Could not load or parse XML file." << std::endl;
+            std::cout << ">> ifExistsAccountNumber: Could not load or parse XML file." << std::endl;
             return 2; // some error
 
         } else {
@@ -397,9 +421,19 @@ namespace fileOperations {
 
     }
 
-    // 0 for true
-    // 1 for false
-    // 2 for error
+    /*
+    Purpose:
+        Check if specified bank account exists and is not "Locked" = 3.
+    Params:
+        const char* c_fileName: XML file that contains the bank accounts.
+        std::string strAccountName: Specified account name.
+        std::string strAccountNumber: Specified account number.
+    Return:
+        int
+        0: Specified account valid to be chosen
+        1: Specified account not valid to be chosen
+        2: for error
+    */
     int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber){
 
         char* c_accountName = &strAccountName[0];
@@ -408,7 +442,7 @@ namespace fileOperations {
         pugi::xml_document doc;
 
         if(loadBankFileXML(c_fileName, doc) == 1){
-            std::cout << "ifExistsAccountNumber: Could not load or parse XML file." << std::endl;
+            std::cout << ">> ifExistsAccountNumber: Could not load or parse XML file." << std::endl;
             return 2; // some error
 
         } else {
@@ -599,7 +633,7 @@ namespace fileOperations {
         int printFlag = 0;
 
         if(loadBankFileXML(fileName, doc) == 1){
-            std::cout << "addTransactionHistory: Could not load or parse XML file." << std::endl;
+            std::cout << ">> addTransactionHistory: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -857,7 +891,7 @@ namespace fileOperations {
         int printFlag = 0;
 
         if(loadBankFileXML(c_fileName, doc) == 1){
-            std::cout << "updateAccountNode: Could not load or parse XML file." << std::endl;
+            std::cout << ">> updateAccountNode: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -884,6 +918,18 @@ namespace fileOperations {
         }
     }
 
+    /*
+    Purpose:
+    Params:
+        const char* c_fileName:
+        std::string strAccountName:
+        std::string strAccountNumber:
+        std::string strLockVal
+    Return:
+        int
+        0: Successfully updated "Locked" status and added history if strLockVal == 3, closing account.
+        1: Error
+    */
     int setAccountLockStatus(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strLockVal){
         int operationStatus = 0;
         //updateAccountNode(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strAttrName, std::string strAttrVal)
@@ -894,8 +940,11 @@ namespace fileOperations {
         }
 
         // update history
-
-        return addTransactionHistory(c_fileName, strAccountName, strAccountName, "0", "0", "0", 99, "", "");
+        if (strLockVal == "3"){ // 3 is locked
+            return addTransactionHistory(c_fileName, strAccountName, strAccountName, "0", "0", "0", 99, "", "");
+        } else {
+            return operationStatus;
+        }
     }
 
 
