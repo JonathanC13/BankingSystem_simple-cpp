@@ -45,6 +45,24 @@ AccountManagement
 Make command sections clearer with divisions like 
 ====== account ======
 ====/ account ====
+
+
+
+Test:
+Bank System:
+std::cout << "0: Exit" << std::endl;                    ** pass
+std::cout << "1: Create account" << std::endl;          ** pass
+std::cout << "2: Select account" << std::endl;          ** pass
+std::cout << "3: Print all accounts" << std::endl;      ** pass
+
+Account Management:
+std::cout << "0: Exit" << std::endl;                    ** pass
+std::cout << "1: Balance" << std::endl;                 ** pass
+std::cout << "2: Withdraw" << std::endl;                ** pass
+std::cout << "3: Deposit" << std::endl;                 ** pass
+std::cout << "4: Transfer" << std::endl;                ** pass
+std::cout << "5: Print account history" << std::endl;   ** pass
+std::cout << "99: Close Account" << std::endl;          ** pass
 */
 
 // Close account: ask to withdraw all money or transfer. If withdraw, then set to 0 and lock account (Locked = 3). If transfer, transfer to valid account then lock.
@@ -63,7 +81,10 @@ Params:
 
   string strAccountNumber: strAccountNumber
 
-  int &retCode: assigns a value depending on the nature of the exiting of the account management. 0 for successful exit (user selected 'exit' command), 1 for a failure in a command and had to exit account.
+  int &retCode: assigns a value depending on the nature of the exiting of the account management. 
+          0 for successful exit (user selected 'exit' command)
+          1 for a failure in a command and had to exit account.
+          99 for account closed.
 Return:
   N/A
 */
@@ -97,7 +118,7 @@ int AccountManagement::AccountCommandCenter(){
 
   while(continueFlag == 1){ // 
 
-    std::cout << "========== Options menu ==========" << std::endl << std::endl;
+    std::cout << "\n========== Options menu ==========\n" << std::endl;
 
     // display options:
     //std::cout << "Options menu:" << std::endl;
@@ -113,9 +134,12 @@ int AccountManagement::AccountCommandCenter(){
     // get any valid int from user
     selectedOption = inputHandler::getUserValidInt();
 
+    std::cout << "==========\\ Options menu ==========\n" << std::endl;
+
     // When an integer is entered is entered, perform action if a valid option or prompt user again to enter a valid option's integer.
     switch(selectedOption){
       case 0:
+        
         continueFlag = 0;
         break;
       case 1:
@@ -158,8 +182,6 @@ int AccountManagement::AccountCommandCenter(){
         break;
     }
 
-    std::cout << "\n";
-
     if(operationStatus == 1){
       std::cout << ">> Issue detected, ending session now." << std::endl;
       break;
@@ -168,8 +190,12 @@ int AccountManagement::AccountCommandCenter(){
 
   }
 
-  std::cout << "==========\\ Account Management for account: " << this->strAccountName << "::" << this->strAccountNumber << " ==========" << std::endl << std::endl;
+  std::cout << "==========\\ Account Management for account: " << this->strAccountName << "::" << this->strAccountNumber << " ==========\n" << std::endl;
+  std::cout << "Exited Account." << std::endl;
 
+  if (accountClosed == 0){
+    return 99;
+  }
   return 0;
 }
 
@@ -177,7 +203,7 @@ int AccountManagement::AccountCommandCenter(){
 // 1 for false
 // 2 for error
 int AccountManagement::checkIfAccountStillExists(){
-  return fileOperations::getFlagValidAccount(this->strFileName, this->strAccountName, this->strAccountNumber);
+  return fileOperations::getFlagValidAccount(this->strFileName, this->strAccountName, this->strAccountNumber, "1");
 }
 
 
@@ -210,7 +236,7 @@ int AccountManagement::printBalance(){
       std::cout << ">> Error accessing account." << std::endl;
       return 1;
     } else {
-      std::cout << "Account balance: " << balanceRet << std::endl;
+      std::cout << "\n> Account balance: " << balanceRet << "\n" << std::endl;
       return 0;
     }
 
@@ -251,13 +277,13 @@ int AccountManagement::withdraw(){
     std::cout << ">> Error accessing account." << std::endl;
     return 1;
   } else {
-    std::cout << "Current account balance: " << strBalance << "\n" << std::endl;
+    std::cout << "> Current account balance: " << strBalance << "\n" << std::endl;
   }
   
   ldBalance = std::stold(strBalance, &sz);
 
-  std::cout << "Enter 0 to exit." << std::endl;
-  std::cout << "Please enter the amount you wish to withdraw, up to 2 fractional digits (123.123456): "; 
+  std::cout << "> Enter 0 to exit." << std::endl;
+  std::cout << "> Please enter the amount you wish to withdraw, up to 2 fractional digits (123.123456): "; 
   
   withdrawAmt = inputHandler::getUserValid6FracVal();
 
@@ -267,9 +293,9 @@ int AccountManagement::withdraw(){
       break;
     }
     else if (withdrawAmt < 0 ){
-      std::cout << "Please enter a value greater than 0." << std::endl;
+      std::cout << "> Please enter a value greater than 0." << std::endl;
     } else if (withdrawAmt > ldBalance){
-      std::cout << "Please enter a value that is not greater than the current balance." << std::endl;
+      std::cout << "> Please enter a value that is not greater than the current balance." << std::endl;
     } else {
       break;
     }
@@ -281,10 +307,10 @@ int AccountManagement::withdraw(){
       std::cout << ">> Error accessing account." << std::endl;
       return 1;
     } else {
-      std::cout << "Current account balance: " << strBalance << "\n" << std::endl;
+      std::cout << "> Current account balance: " << strBalance << "\n" << std::endl;
     }
-    std::cout << "Enter 0 to exit." << std::endl;
-    std::cout << "Please enter the amount you wish to withdraw, up to 2 fractional digits (123.123456): "; 
+    std::cout << "> Enter 0 to exit." << std::endl;
+    std::cout << "> Please enter the amount you wish to withdraw, up to 2 fractional digits (123.123456): "; 
     withdrawAmt = inputHandler::getUserValid6FracVal();
 
   }
@@ -301,11 +327,11 @@ int AccountManagement::withdraw(){
     
 
     std::stringstream ssBal;
-    ssBal << ldBalance;
+    ssBal << std::fixed << std::setprecision(6) << ldBalance;
     std::string strBal = ssBal.str();
 
     std::stringstream ssWithdraw;
-    ssWithdraw << withdrawAmt;
+    ssWithdraw << std::fixed << std::setprecision(6) << withdrawAmt;
     std::string strWithdraw = ssWithdraw.str();
 
     // update balance in the XML
@@ -317,7 +343,7 @@ int AccountManagement::withdraw(){
       std::cout << ">> Error committing withdraw." << std::endl;
       return 1;
     } else {
-      std::cout << "Amount withdrawn: " << strWithdraw << std::endl;
+      std::cout << "> Amount withdrawn: " << strWithdraw << std::endl;
       operationStatus = printBalance();
       
       return operationStatus;
@@ -358,14 +384,14 @@ int AccountManagement::deposit(){
     std::cout << ">> Error accessing account." << std::endl;
     return 1;
   } else {
-    std::cout << "Current account balance: " << strBalance << std::endl;
+    std::cout << "> Current account balance: " << strBalance << std::endl;
   }
   
   ldBalance = std::stold(strBalance, &sz);
 
 
-  std::cout << "Enter 0 to exit." << std::endl;
-  std::cout << "Please enter the amount you wish to deposit, up to 2 fractional digits (123.yy): "; 
+  std::cout << "> Enter 0 to exit." << std::endl;
+  std::cout << "> Please enter the amount you wish to deposit, up to 6 fractional digits (123.123456): "; 
   
   depositAmt = inputHandler::getUserValid6FracVal();
 
@@ -375,13 +401,13 @@ int AccountManagement::deposit(){
       break;
     }
     else if (depositAmt < 0 ){
-      std::cout << "Please enter a value greater than 0." << std::endl;
+      std::cout << "> Please enter a value greater than 0." << std::endl;
     } else {
       break;
     }
 
-    std::cout << "Enter 0 to exit." << std::endl;
-    std::cout << "Please enter the amount you wish to deposit, up to 2 fractional digits (123.yy): "; 
+    std::cout << "> Enter 0 to exit." << std::endl;
+    std::cout << "> Please enter the amount you wish to deposit, up to 6 fractional digits (123.yy): "; 
     depositAmt = inputHandler::getUserValid6FracVal();
 
   }
@@ -398,11 +424,11 @@ int AccountManagement::deposit(){
     
 
     std::stringstream ssBal;
-    ssBal << ldBalance;
+    ssBal << std::fixed << std::setprecision(6) << ldBalance;
     std::string strBal = ssBal.str();
 
     std::stringstream ssDepsit;
-    ssDepsit << depositAmt;
+    ssDepsit << std::fixed << std::setprecision(6) << depositAmt;
     std::string strDeposit= ssDepsit.str();
 
     // update balance in the XML
@@ -415,7 +441,7 @@ int AccountManagement::deposit(){
       std::cout << ">> Error accessing account." << std::endl;
       return 1;
     } else {
-      std::cout << "Amount deposited: " << strDeposit << std::endl;
+      std::cout << "> Amount deposited: " << strDeposit << std::endl;
       operationStatus = printBalance();
      
       return operationStatus;
@@ -466,18 +492,18 @@ int AccountManagement::transfer(){
     iInAccountNumber = -1;
     strAccountNumberDest = "";
 
-    std::cout << "Available accounts to transer to:" << std::endl;
+    std::cout << "> Available accounts to transer to:" << std::endl;
 
 
     if(fileOperations::printAllAccountsExcludeCurr(this->strFileName, this->strAccountName, this->strAccountNumber) == 1){
         return 1;
     } 
 
-    std::cout <<  "================================" << std::endl;
-    std::cout << "Enter \"-1\" to exit Account Selection. \n" << std::endl;
+    std::cout << "================================" << std::endl;
+    std::cout << "> Enter \"-1\" to exit Account Selection. \n" << std::endl;
 
     // prompt user for account name
-    std::cout << "Enter desired destination Account Name (case sensative): ";
+    std::cout << "> Enter desired destination Account Name (case sensative): ";
     inputHandler::getUserInput(strAccountNameDest);
     std::cout << "\n";
 
@@ -487,7 +513,7 @@ int AccountManagement::transfer(){
     }
 
     // prompt user for the associated account number
-    std::cout << "Enter associated destination Account Number: ";
+    std::cout << "> Enter associated destination Account Number: ";
     iInAccountNumber = inputHandler::getUserValidInt();
     strAccountNumberDest = std::to_string(iInAccountNumber);
 
@@ -498,8 +524,6 @@ int AccountManagement::transfer(){
 
     inputHandler::padLeadingZeros(padLeading, strAccountNumberDest);
 
-    std::cout << "\n\n";
-
     
 
 
@@ -507,14 +531,14 @@ int AccountManagement::transfer(){
       // 0 for true
     // 1 for false
     // 2 for error
-    iDestAccExists = fileOperations::getFlagValidAccount(this->strFileName, strAccountNameDest, strAccountNumberDest);
+    iDestAccExists = fileOperations::getFlagValidAccount(this->strFileName, strAccountNameDest, strAccountNumberDest, "1");
     //std::cout <<"ret: " << iDestAccExists << std::endl;
     if(iDestAccExists == 2){
       return 1;
     } else if (iDestAccExists == 0){
       break;
     } else {
-      std::cout << "Destination account does not exist, please try again.\n" << std::endl;
+      std::cout << "> Destination account does not exist, please try again.\n" << std::endl;
     }
 
   }
@@ -536,9 +560,9 @@ int AccountManagement::transfer(){
     std::string::size_type sz;
     ldCurrBalanceSrc = std::stold(currBalanceSrc, &sz);
 
-    std::cout << "Current account name: " << this->strAccountName << ", account number: " << this->strAccountNumber << ". Balance: " << currBalanceSrc << std::endl;
-    std::cout << "Destination account name: " << strAccountNameDest << ", account number: " << strAccountNumberDest << std::endl;
-    std::cout << "Please enter the valid amount to transfer to destination, up to 6 fractional digits (123.123456), or 0 to exit: ";
+    std::cout << "> Current account name: " << this->strAccountName << ", account number: " << this->strAccountNumber << ". Balance: " << currBalanceSrc << std::endl;
+    std::cout << "> Destination account name: " << strAccountNameDest << ", account number: " << strAccountNumberDest << std::endl;
+    std::cout << "> Please enter the valid amount to transfer to destination, up to 6 fractional digits (123.123456), or 0 to exit: ";
     ldTransferAmt = inputHandler::getUserValid6FracVal();
 
     while (true){
@@ -547,9 +571,9 @@ int AccountManagement::transfer(){
         break;
       }
       else if (ldTransferAmt < 0 ){
-        std::cout << "Please enter a value greater than 0." << std::endl;
+        std::cout << "> Please enter a value greater than 0." << std::endl;
       } else if (ldTransferAmt > ldCurrBalanceSrc){
-        std::cout << "Please enter a value that is not greater than the current balance of the source account." << std::endl;
+        std::cout << "> Please enter a value that is not greater than the current balance of the source account." << std::endl;
       } else {
         
         break;
@@ -557,8 +581,8 @@ int AccountManagement::transfer(){
       }
 
 
-      std::cout << "Enter 0 to exit." << std::endl;
-      std::cout << "Please enter the valid amount to transfer to destination, up to 6 fractional digits (123.123456), or 0 to exit: ";
+      std::cout << "> Enter 0 to exit." << std::endl;
+      std::cout << "> Please enter the valid amount to transfer to destination, up to 6 fractional digits (123.123456), or 0 to exit: ";
       ldTransferAmt = inputHandler::getUserValid6FracVal();
 
     }
@@ -583,7 +607,7 @@ int AccountManagement::transfer(){
       std::string strNewBalSrc = ssSrc.str(); // new balance to set in source acc
       
       std::stringstream ssBalSrc;
-      ssBalSrc << ldCurrBalanceSrc;
+      ssBalSrc << std::fixed << std::setprecision(6) << ldCurrBalanceSrc;
       std::string strBalSrc = ssBalSrc.str(); // current balance in source acc
 
       // --
@@ -603,14 +627,14 @@ int AccountManagement::transfer(){
       std::string strNewBalDest = ssDest.str(); // new balance of destination account
       
       std::stringstream ssBalDest;
-      ssBalDest << ldCurrBalanceDest;
+      ssBalDest << std::fixed << std::setprecision(6) << ldCurrBalanceDest;
       std::string strBalDest = ssBalDest.str(); // current balance of destination account
 
 
       // --
 
       std::stringstream ssTransfer;
-      ssTransfer << ldTransferAmt;
+      ssTransfer << std::fixed << std::setprecision(6) << ldTransferAmt;
       std::string strTransfer = ssTransfer.str(); // amount that is being transferred
 
       // call function to commit transfer
@@ -619,9 +643,9 @@ int AccountManagement::transfer(){
       
       
       if(operationStatus == 0){
-        std::cout << "Transfer complete.";
+        std::cout << "> Transfer complete." << std::endl;
       } else {
-        std::cout << ">> Error: Transfer issue.";
+        std::cout << ">> Error: Transfer issue."<< std::endl;
       }
       return operationStatus;
       
@@ -650,12 +674,12 @@ int AccountManagement::closeAccount(int &acctClosed){
 
   acctClosed = 1; // 1 means not closed
 
-  std::cout << "========== Closing account: " << this->strAccountName << "::" << this->strAccountNumber << " ==========" << std::endl;
+  std::cout << "========== Closing account: " << this->strAccountName << "::" << this->strAccountNumber << " ==========\n" << std::endl;
 
   while(continueFlag == 1){ // 
 
     std::cout << "========== Closing account: options menu ==========" << std::endl;
-    std::cout << "You may only close the account once the balance is 0. Once 0, please select option [99]. Please select from the following options." << std::endl << std::endl;
+    std::cout << "> You may only close the account once the balance is 0. Once 0, please select option [99]. Please select from the following options." << std::endl << std::endl;
 
     // display options:
     
@@ -668,6 +692,8 @@ int AccountManagement::closeAccount(int &acctClosed){
 
     // get any valid int from user
     selectedOption = inputHandler::getUserValidInt();
+
+    std::cout << "\n==========\\ Closing account: options menu ==========\n" << std::endl;
 
     // When an integer is entered is entered, perform action if a valid option or prompt user again to enter a valid option's integer.
     switch(selectedOption){
@@ -687,7 +713,7 @@ int AccountManagement::closeAccount(int &acctClosed){
       case 3:
         std::cout<< "========== Closing account: Transfer ==========" <<std::endl;
         operationStatus = transfer();
-        std::cout<< "========== Closing account: Transfer ==========" <<std::endl;
+        std::cout<< "==========\\ Closing account: Transfer ==========" <<std::endl;
         break;
       case 99:
         operationStatus = fileOperations::getBalance(this->strFileName, this->strAccountName, this->strAccountNumber, strBalanceRet);
@@ -704,15 +730,15 @@ int AccountManagement::closeAccount(int &acctClosed){
 
           if (operationStatus == 0){
             acctClosed = 0; // successfully closed
-            std::cout << "Account successfully closed." << std::endl;
+            std::cout << "> Account successfully closed.\n" << std::endl;
           } else {
-            std::cout << ">> Error: Closing account issue." << std::endl;
+            std::cout << ">> Error: Closing account issue.\n" << std::endl;
             break;
           }
 
           continueFlag = 0;
         } else {
-          std::cout << "The balance of the account is: " << strBalanceRet << ". Cannot close account until the balance is 0." << std::endl;
+          std::cout << "> The balance of the account is: " << strBalanceRet << ". Cannot close account until the balance is 0." << std::endl;
         }
 
 
@@ -721,8 +747,6 @@ int AccountManagement::closeAccount(int &acctClosed){
         std::cout << ">> Error, user has entered a number for an option that does not exist." << std::endl << std::endl;
         break;
     }
-
-    std::cout << "\n";
 
     if(operationStatus == 1){
       std::cout << ">> Issue detected, ending session now." << std::endl;

@@ -70,7 +70,7 @@ namespace fileOperations {
         1: Specified account not valid to be chosen
         2: for error
     */
-    int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber);
+    int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strFlagSel);
 
     int getBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceRet);
 

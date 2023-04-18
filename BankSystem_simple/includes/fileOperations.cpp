@@ -151,10 +151,12 @@ namespace fileOperations {
 
         //std::cout << "a name: " << accountName << std::endl;
 
+        /*
         for (int i = 0; i < 9; i++){
             std::cout << accountNumber[i] << "|"; 
         }
         std::cout<< std::endl;
+        */
 
         if(loadBankFileXML(fileName, doc) == 1){
             std::cout << ">> addAccount: Could not load or parse XML file." << std::endl;
@@ -430,13 +432,19 @@ namespace fileOperations {
         const char* c_fileName: XML file that contains the bank accounts.
         std::string strAccountName: Specified account name.
         std::string strAccountNumber: Specified account number.
+        std::string strFlagSel: 0 = For only "Locked" = 0
+                                1 = For only "Locked" != 3
     Return:
         int
         0: Specified account valid to be chosen
         1: Specified account not valid to be chosen
         2: for error
     */
-    int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber){
+    int getFlagValidAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strFlagSel){
+
+        if (strFlagSel.compare("0") != 0 && strFlagSel.compare("1") != 0){
+            return 1;
+        }
 
         char* c_accountName = &strAccountName[0];
         char* c_accountNumber = &strAccountNumber[0];
@@ -458,15 +466,26 @@ namespace fileOperations {
                 //Attributes that belongs to the Element "Account"
 
                 //if(xnAccount.attribute("Locked").as_int() == 0 && strcmp(xnAccount.attribute("AccountName").value(), c_accountName) == 0 && strcmp(xnAccount.attribute("AccountNumber").value(), c_accountNumber) == 0){ // accounts that are not locked, 0 = not locked, with matching account name and number.
-                //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << ". Locked: " << xnAccount.attribute("Locked").as_int() << std::endl;
 
-                if(xnAccount.attribute("Locked").as_int() != 3 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+                if (strFlagSel.compare("0") == 0){
+                    if(xnAccount.attribute("Locked").as_int() == 0 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
 
-                    //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
-                    
+                        //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                        
 
-                    return 0;
+                        return 0;
 
+                    }
+                } else if (strFlagSel.compare("1") == 0){
+                    if(xnAccount.attribute("Locked").as_int() != 3 && strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
+
+                        //std::cout << "> " << "Account Name: " << xnAccount.attribute("AccountName").value() << ", Account Number: " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                        
+
+                        return 0;
+
+                    }
                 }
             }
         }
@@ -846,44 +865,7 @@ namespace fileOperations {
         return getTargetNodeAttrLevel1(fileName, strAccountName, strAccountNumber, "Balance", "currentBalance", strBalanceRet);
     }
 
-    /*
-    iCommand:
-        1: withdraw
-        2: deposit
-        3: transfer
-    */
-    int setBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand){
-
-        if (iCommand != 1 && iCommand != 2 && iCommand != 3){
-            return 1;
-        }
-
-        int operationStatus = 0;
-        char cDate[50];
-        getLocalTime(&cDate[0], sizeof(cDate)-1);
-        std::string strDate = std::string(cDate);
-
-        //std::cout << "1. " << strAccountName << " " << strAccountNumber << std::endl;
-        operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, strAccountNumber, "Balance", "currentBalance", strBalanceSet);
-
-        //std::cout << "operationStatus1: " << operationStatus << std::endl;
-
-        if (operationStatus == 0){
-            // update time stamp    
-            operationStatus = updateAccountNode(fileName, strAccountName, strAccountNumber, "lastUpdatedDate", strDate);
-        }
-
-        if (operationStatus == 0 && iCommand != 3 ){
-            
-            //std::cout << "history" << std::endl;
-            // add transaction history
-            operationStatus = addTransactionHistory(fileName, strAccountName, strAccountNumber, strBalanceSet, strOrgBal, strChangeAmt, iCommand, "", "","0","0");
-            
-        }
-
-
-        return operationStatus;
-    }
+    
 
 
     int updateAccountNode(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strAttrName, std::string strAttrVal){
@@ -922,6 +904,45 @@ namespace fileOperations {
 
             return 0;
         }
+    }
+
+    /*
+    iCommand:
+        1: withdraw
+        2: deposit
+        3: transfer
+    */
+    int setBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strOrgBal, std::string &strChangeAmt, int iCommand){
+
+        if (iCommand != 1 && iCommand != 2 && iCommand != 3){
+            return 1;
+        }
+
+        int operationStatus = 0;
+        char cDate[50];
+        getLocalTime(&cDate[0], sizeof(cDate)-1);
+        std::string strDate = std::string(cDate);
+
+        //std::cout << "1. " << strAccountName << " " << strAccountNumber << std::endl;
+        operationStatus = updateTargetNodeAttrLevel1(fileName, strAccountName, strAccountNumber, "Balance", "currentBalance", strBalanceSet);
+
+        //std::cout << "operationStatus1: " << operationStatus << std::endl;
+
+        if (operationStatus == 0){
+            // update time stamp    
+            operationStatus = updateAccountNode(fileName, strAccountName, strAccountNumber, "lastUpdatedDate", strDate);
+        }
+
+        if (operationStatus == 0 && iCommand != 3 ){
+            
+            //std::cout << "history" << std::endl;
+            // add transaction history
+            operationStatus = addTransactionHistory(fileName, strAccountName, strAccountNumber, strBalanceSet, strOrgBal, strChangeAmt, iCommand, "", "","0","0");
+            
+        }
+
+
+        return operationStatus;
     }
 
     /*
@@ -1035,12 +1056,12 @@ namespace fileOperations {
         const char* c_strAccountName = &strAccountName[0];
         const char* c_strAccountNumber = &strAccountNumber[0];
 
-        std::cout << "strAccountName: " << strAccountName << ". strAccountNumber: " << strAccountNumber << std::endl;
+        //std::cout << "strAccountName: " << strAccountName << ". strAccountNumber: " << strAccountNumber << "\n" << std::endl;
 
         int printFlag = 0;
 
         if(loadBankFileXML(c_fileName, doc) == 1){
-            std::cout << "printAccountHistory: Could not load or parse XML file." << std::endl;
+            std::cout << ">> printAccountHistory: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -1051,41 +1072,44 @@ namespace fileOperations {
             for(pugi::xml_node xnAccount : bankAccounts.children("Account")){ // for each Element "Account"
                 //Attributes that belongs to the Element "Account"
 
-                std::cout << "0. " << xnAccount.attribute("AccountName").value() << " " << xnAccount.attribute("AccountNumber").value() << std::endl;
+                //std::cout << "0. " << xnAccount.attribute("AccountName").value() << " " << xnAccount.attribute("AccountNumber").value() << std::endl;
                 if(strAccountName.compare(std::string(xnAccount.attribute("AccountName").value())) == 0 && strAccountNumber.compare(std::string(xnAccount.attribute("AccountNumber").value())) == 0){ 
 
-                    std::cout << "in" << std::endl;
+                    //std::cout << "in" << std::endl;
                     
                     pugi::xml_node xnAccountTransactionHist = xnAccount.child("TransactionHistory");
 
                     for(pugi::xml_node xnAccountHistory : xnAccountTransactionHist.children("History")){
-                        std::cout << "====== History ======" << std::endl;
-                        std::cout << "=== History attr ===" << std::endl;
-                        std::cout << "Order: " << xnAccountHistory.attribute("Order").value() << ". Date: " << xnAccountHistory.attribute("Date").value() << ". Desc: " << xnAccountHistory.attribute("Desc").value() << std::endl;
-                        std::cout << "===\\ History attr ===" << std::endl;
+                        std::cout << "------ History ------" << std::endl;
+                        std::cout << "Order: " << xnAccountHistory.attribute("Order").value() << "\n" << "Date: " << xnAccountHistory.attribute("Date").value() << "\n" << "Desc: " << xnAccountHistory.attribute("Desc").value() << "\n" << std::endl;
+                        
 
                         pugi::xml_node xnTransaction = xnAccountHistory.child("Transaction");
                         pugi::xml_node xnTransFrom = xnTransaction.child("TransferFrom");
                         pugi::xml_node xnTransTo = xnTransaction.child("TransferTo");
 
-                        std::cout << "=== History details ===" << std::endl;
-                        std::cout << "Transaction: " << xnTransaction.attribute("Desc").value() << std::endl;
+                        std::cout << "\t" << "------ Transaction details ------" << std::endl;
+                        std::cout << "\t" << "Transaction: " << xnTransaction.attribute("Desc").value() << std::endl;
+                        std::cout << "\t" << "BalanceBefore: " << xnTransaction.attribute("BalanceBefore").value() << std::endl;
+                        std::cout << "\t" << "BalanceAfter: " << xnTransaction.attribute("BalanceAfter").value() << std::endl;
 
-                        std::cout << "=== TransferFrom ===" << std::endl;
-                        std::cout << "AccountName: " << xnTransFrom.child("AccountName").text().get() << std::endl;
-                        std::cout << "AccountNumber: " << xnTransFrom.child("AccountNumber").text().get() << std::endl;
-                        std::cout << "AmountFrom: " << xnTransFrom.child("AmountFrom").text().get() << std::endl;
-                        std::cout << "===\\ TransferTo ===" << std::endl;
+                        std::cout << "\t\t" << "--- TransferFrom ---" << std::endl;
+                        std::cout << "\t\t\t" << "AccountName: " << xnTransFrom.child("AccountName").text().get() << std::endl;
+                        std::cout << "\t\t\t" << "AccountNumber: " << xnTransFrom.child("AccountNumber").text().get() << std::endl;
+                        std::cout << "\t\t\t" << "AmountFrom: " << xnTransFrom.child("AmountFrom").text().get() << std::endl;
+                        std::cout << "\t\t" << "---\\ TransferFrom ---" << std::endl;
 
-                        std::cout << "=== TransferTo ===" << std::endl;
-                        std::cout << "AccountName: " << xnTransTo.child("AccountName").text().get() << std::endl;
-                        std::cout << "AccountNumber: " << xnTransTo.child("AccountNumber").text().get() << std::endl;
-                        std::cout << "AmountTo: " << xnTransTo.child("AmountTo").text().get() << std::endl;
-                        std::cout << "===\\ TransferFrom ===" << std::endl;
-                        std::cout << "===\\ History details ===" << std::endl;
+                        std::cout << "\t\t" << "--- TransferTo ---" << std::endl;
+                        std::cout << "\t\t\t" << "AccountName: " << xnTransTo.child("AccountName").text().get() << std::endl;
+                        std::cout << "\t\t\t" << "AccountNumber: " << xnTransTo.child("AccountNumber").text().get() << std::endl;
+                        std::cout << "\t\t\t" << "AmountTo: " << xnTransTo.child("AmountTo").text().get() << std::endl;
+                        std::cout << "\t\t" << "---\\ TransferFrom ---" << std::endl;
+                        std::cout << "\t" << "------\\ Transaction details ------\n" << std::endl;
 
+                        std::cout << "------\\ History ------\n" << std::endl;
 
-                        std::cout << "======\\ History ======\n\n" << std::endl;
+                        std::cout << "-----------------------------------------\n" << std::endl;
+                        
 
                     }
 
@@ -1112,7 +1136,7 @@ namespace fileOperations {
         pugi::xml_document doc;
 
         if(loadBankFileXML(fileName, doc) == 1){
-            std::cout << "commitWithdraw: Could not load or parse XML file." << std::endl;
+            std::cout << ">> commitWithdraw: Could not load or parse XML file." << std::endl;
             return 1; // some error
 
         } else {
@@ -1175,7 +1199,7 @@ namespace fileOperations {
 
                     pugi::xml_node amountTo = transferTo.append_child("AmountTo");
                     toAccountNumber.text() = "";
-                    std::cout << "withdraw end" << std::endl;
+                    //std::cout << "withdraw end" << std::endl;
                     
                           
                     return saveToBankFileXML(fileName, doc); 
@@ -1304,7 +1328,7 @@ namespace fileOperations {
                     xnAccount.attribute("lastUpdatedDate").set_value(cDate);
 
                     // change balance
-                    xnAccount.child("Balance").attribute("currentBalance").set_value(&strCurrBalSrc[0]);
+                    xnAccount.child("Balance").attribute("currentBalance").set_value(&strNewBalSrc[0]);
 
                     // add history
                     // get TransactionHistory Node
@@ -1349,7 +1373,7 @@ namespace fileOperations {
                     toAccountNumber.text() = &strAccountNumberDest[0];
 
                     pugi::xml_node amountTo = transferTo.append_child("AmountTo");
-                    toAccountNumber.text() = &strTransferAmt[0];
+                    amountTo.text() = &strTransferAmt[0];
 
                     iChangeCnt ++;
                 }
