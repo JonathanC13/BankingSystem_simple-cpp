@@ -2,6 +2,7 @@
 #include<string.h>
 #include <cstring>
 #include<time.h>
+#include <fstream>      // std::fstream
 
 // XML Parser
 #include "..\Libraries\pugixml-1.13\src\pugixml.hpp"
@@ -90,6 +91,39 @@ namespace fileOperations {
         }
         
         
+    }
+
+    /*
+    Purpose:
+        If the file does not exist and then create the XML file. Either the file already existed or newly created, attempt to load the XML file.
+    Params:
+        const char* fileName: file name of the XML file that contains the bank accounts
+    Return:
+        0: Successfully loaded the xml document for use
+        1: Failure to either create the file or load the XML file
+    */
+    int createFileIfNotExists(const char* fileName){
+        pugi::xml_document doc;
+
+        std::fstream fs;
+
+        fs.open(fileName);
+        if (fs.is_open() == false) {
+            // file could not be opened
+
+            // attempt to create the file
+            if(createBankFileXML(fileName) != 0){
+                std::cout << ">> Could not create the file." << std::endl;
+                return 1;   
+            }
+        } else {
+            fs.close();
+
+        }
+
+        // attempt to load the file
+        return loadBankFileXML(fileName, doc);
+
     }
 
     // commit the XML wholly to the XML file

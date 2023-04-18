@@ -18,6 +18,8 @@ namespace fileOperations {
     */
     int createBankFileXML(const char* fileName);
 
+    int createFileIfNotExists(const char* fileName);
+
     void printXML(const char* fileName);
 
     /*

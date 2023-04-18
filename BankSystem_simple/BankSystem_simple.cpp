@@ -45,6 +45,14 @@ int main(){
 
 
     const char* fileName = "BankSystem.XML";
+
+    /* Return 1 then it indicates that if the file did not exist, there was an error attempting to create the XML file.
+        
+     */
+    if(fileOperations::createFileIfNotExists(fileName) == 1){
+        std::cout << ">> Error with the file." << std::endl;
+        return 1;
+    }
     
     int continueFlag = 1;
     int selectedOption;
