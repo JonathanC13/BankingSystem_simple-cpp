@@ -20,6 +20,8 @@ Return:
 /*
 
 Todo:
+
+
   
 
   Need a better locking mechanism? 
@@ -30,21 +32,6 @@ Todo:
         2. setBalance -> updateTargetNodeAttrLevel1
                       -> addTransactionHistory
   Should have designed this with semaphores to lock the XML file to be accessed when a user is performing an operation. Oh well, just doing this for the heck of it.
-
-Test close account again for correct check for balance = 0 before closing and history to stamp the close date 
-
-BankSystem_simple.cpp
-  1. Then go back to Account select in BankSystem_simple.cpp ** to test
-  2. operation to print all accounts with lock status ** to test
-
-AccountManagement
-  1. new operation to neatly print all history. Asc by date, just order of how it was saved. ** here
-    printAccountHistory
-      better print format
-
-Make command sections clearer with divisions like 
-====== account ======
-====/ account ====
 
 
 
@@ -63,6 +50,10 @@ std::cout << "3: Deposit" << std::endl;                 ** pass
 std::cout << "4: Transfer" << std::endl;                ** pass
 std::cout << "5: Print account history" << std::endl;   ** pass
 std::cout << "99: Close Account" << std::endl;          ** pass
+
+
+** todo here, chill and clean up comments and add descriptions *********
+
 */
 
 // Close account: ask to withdraw all money or transfer. If withdraw, then set to 0 and lock account (Locked = 3). If transfer, transfer to valid account then lock.
