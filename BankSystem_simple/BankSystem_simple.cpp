@@ -8,7 +8,7 @@
 #include ".\includes\fileOperations.h"
 
 // // complie:  g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp includes/fileOperations.cpp includes/AccountManagement.cpp Libraries/pugixml-1.13/src/pugixml.cpp  // if using includes/eg.h, in the compile then need to explicitly reference the cpp the .h file references.
-// apple
+// Wrote some notes here to move master branch 1 commit forward from local repo master branch. I want to follow procedure on how to merge onto a branch that is ahead.
 /* remote
 TODO:
 
