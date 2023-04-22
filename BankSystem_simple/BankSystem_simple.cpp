@@ -16,7 +16,10 @@ g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp inc
 /* 
 git
 Branch from main
-work on branch
+work on branch (commits)
+git fetch [repo] (to get activities like commits, files, and refs from the remote repo)
+    git log (check out a branch and see commit history)
+    git diff branch1..other-feature-branch (To see differences between the tips of both branches.)
 to merge, switch to main and Merge from, then sync to git
 */
 
