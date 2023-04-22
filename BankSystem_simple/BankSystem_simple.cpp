@@ -18,6 +18,7 @@ git
 Branch from main
 work on branch (commits)
 git fetch [repo] (to get activities like commits, files, and refs from the remote repo)
+    git checkout [branch] (Can switch the to remote branch you just fetched to see)
     git log (check out a branch and see commit history)
     git diff branch1..other-feature-branch (To see differences between the tips of both branches.)
 to merge, switch to main and Merge from, then sync to git
