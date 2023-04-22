@@ -24,6 +24,7 @@ git fetch [repo] (to get activities like commits, files, and refs from the remot
     git log (check out a branch and see commit history)
     git diff branch1..other-feature-branch (To see differences between the tips of both branches.) git diff --summary FETCH_HEAD
 git merge origin/[branch] (to merge, switch to main and Merge from, then sync to git)
+$ git push origin master (Publish to remote)
 */
 
 /*
