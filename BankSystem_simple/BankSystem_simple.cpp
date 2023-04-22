@@ -6,30 +6,33 @@
 
 #include ".\includes\inputHandler.h"
 #include ".\includes\fileOperations.h"
+#include ".\includes\AccountManagement.h"
 
-// // complie:  g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp includes/fileOperations.cpp includes/AccountManagement.cpp Libraries/pugixml-1.13/src/pugixml.cpp  // if using includes/eg.h, in the compile then need to explicitly reference the cpp the .h file references.
-// Wrote some notes here to move master branch 1 commit forward from local repo master branch. I want to follow procedure on how to merge onto a branch that is ahead.
-/* remote
-TODO:
+/* complie:  
+g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp includes/fileOperations.cpp includes/AccountManagement.cpp Libraries/pugixml-1.13/src/pugixml.cpp
+// if using includes/eg.h, in the compile then need to explicitly reference the cpp the .h file references.
 
-2. Account Management class: - here
-    Constructor:  
-        only asks for file name
-    Functions:
-        Exit
-        Request balance
-        Deposit
-        Withdraw
-        Close account -> are you sure confirmation. Not deleting the file, just add a flag to the Account element that it is locked
-3. Select account -- Need #2 completed first. Initialize object when valid account info entered by user
-4. Re-activate account: removing the 'X' last character from the file name, so that selectAccount function will display it.
-
-git
-Branch from main
-work on branch
-to merge, switch to main and Merge from, then sync to git
 */
 
+/* 
+git
+git clone git@github.com:JonathanC13/BankingSystem_simple-cpp.git (clone the remote repo to local)
+git checkout -b iss53 (To create a new branch and switch to it at the same time, you can run the git checkout command with the -b switch. )
+    - work on branch (commits)
+git fetch [repo] (to get activities like commits, files, and refs from the remote repo)
+    git checkout [branch] (Can switch the to remote branch you just fetched to see)
+    git log (check out a branch and see commit history)
+    git diff branch1..other-feature-branch (To see differences between the tips of both branches.) git diff --summary FETCH_HEAD
+git merge origin/[branch] (to merge, switch to main and Merge from, then sync to git)
+$ git push origin master (Publish to remote)
+*/
+
+/*
+'Account' attribute 'Locked':
+    0: unlocked
+    1: in use
+    3: locked (archived)
+*/
 
 int createAccount(const char* fileName);
 void randomAccountNumber(std::string& strAccountNumber);
@@ -45,64 +48,109 @@ int main(){
 
 
     const char* fileName = "BankSystem.XML";
+
+    /* 
+        if return value is 1 then it indicates that, if the file did not exist, there was an error attempting to create the XML file.
+     */
+    if(fileOperations::createFileIfNotExists(fileName) == 1){
+        std::cout << ">> Error with the file." << std::endl;
+        return 1;
+    }
     
     int continueFlag = 1;
     int selectedOption;
 
     int operationStatus = 0;
+    int retCode;
 
+    // test
+    //continueFlag = 0;
 
+    
+
+    //inputHandler::getUserValid6FracVal();
+    //return 0;
+    //std::string strRet;
+    //AccountManagement am = AccountManagement(fileName, "Bert", "000123112", retCode);
+    //AccountManagement am = AccountManagement(fileName, "Jo", "000155554", retCode);
+    //fileOperations::printTargetNodeDataLevel1(fileName, "Bert", "123112", "Balance", strRet);
+    
+    //am.printBalance();
+    //fileOperations::modify_base();
+    //inputHandler::getUserValidMoneyVal();
+
+    //std::cout << strRet;
+
+  
+    // /test
 
     //operationStatus = createAccount("BankSystem.XML");
 
+    std::cout << "==================== Banking system ====================\n" << std::endl;
 
     while(continueFlag == 1){ // 
 
-        std::cout << "===== Banking system =====" << std::endl << std::endl;
+        std::cout << "\n========== Options menu ==========\n" << std::endl;
 
         // display options:
-        std::cout << "Options menu:" << std::endl;
         std::cout << "0: Exit" << std::endl;
         std::cout << "1: Create account" << std::endl;
         std::cout << "2: Select account" << std::endl;
-        std::cout << "3: Re-activate account" << std::endl;
+        std::cout << "3: Print all accounts" << std::endl;
         std::cout << "-----------------" << std::endl;
 
         // get int from user
         selectedOption = inputHandler::getUserValidInt();
 
+        std::cout << "==========\\ Options menu ==========\n" << std::endl;
+
         // When an integer is entered is entered, perform action if a valid option or prompt user again to enter a valid option's integer.
         switch(selectedOption){
             case 0:
+                std::cout << "> Exited." << std::endl;
+                operationStatus = 0;
                 continueFlag = 0;
                 break;
             case 1:
                 // create account
-                std::cout << "Initializing account creation." << std::endl;
+                std::cout << "========== Initializing account creation ==========\n" << std::endl;
                 operationStatus = createAccount(fileName);
 
                 if (operationStatus == 0){
-                    std::cout << "Account created successfully." << std::endl;
-                } else {
-                    std::cout << "Account creation error." << std::endl;
+                    std::cout << "> Account created successfully." << std::endl;
+                } else if (operationStatus == 2){
+                    std::cout << "> Exited." << std::endl;
+                }else {
+                    std::cout << "> Account creation error." << std::endl;
                 }
+
+                std::cout << "\n==========\\ Initializing account creation ==========" << std::endl;
 
                 break;
             case 2:
                 // select account
+                std::cout << "========== Account selection ==========\n" << std::endl;
+
                 operationStatus = selectAccount(fileName);
+
+                std::cout << "\n==========\\ Account selection ==========" << std::endl;
                 break;
             case 3:
-                // Re-activate account
+                // Print all accounts
+                std::cout << "========== Print all accounts ==========\n" << std::endl;
+
+                operationStatus = fileOperations::printAllAccounts(fileName);
+
+                std::cout << "\n==========\\ Print all accounts ==========" << std::endl;
                 break;
             default:
-                std::cout << "Error, user has entered a number for an option that does not exist." << std::endl << std::endl;
+                std::cout << ">> Error, user has entered a number for an option that does not exist." << std::endl;
                 break;
         }
 
 
         if(operationStatus == 1){
-            std::cout << "Issue detected, ending session now." << std::endl;
+            std::cout << ">> main: Issue detected, ending session now." << std::endl;
             break;
         }
 
@@ -110,12 +158,20 @@ int main(){
     }
     
         
-    
+    std::cout << "====================\\ Banking system ====================" << std::endl;
 
     return 0;
 }
 
-// Generate a random int for the account number and store into reference variable [x]
+
+/*
+Purpose:
+    Generate a random 9 digit account number and store into reference variable
+Params:
+  std::string& strAccountNumber: reference variable for the 9 digit account number
+Return:
+  N/A
+*/
 void randomAccountNumber(std::string& strAccountNumber){
 
 
@@ -135,24 +191,31 @@ void randomAccountNumber(std::string& strAccountNumber){
 
 }
 
+/*
 void padLeadingZeros(size_t numberOfDigits, std::string &strPadTarget){
     strPadTarget = std::string(numberOfDigits - std::min(numberOfDigits, strPadTarget.length()), '0') + strPadTarget;
 }
-
+*/
 /*
 Purpose:
-    Display all accounts' names and account numbers for the user except file names with the last character 'X'. To select an account, have the user type the entire account name and number; accountName_19485
-    After valid account selected, an Account object is created and all account operations are handled within that object.
+    Display all accounts' names and account numbers that are not "Locked" = 3. To select an account, have the user type the account name and then account number.
+    After valid account selected, an AccountManagement object is created and all account operations are handled within that object.
 Parameters:
     N/A
 Return:
-    int: 0 = 
-*/ // TODO
+    int
+    0: successfully exited
+    1: Error
+*/
 int selectAccount(const char* fileName){
 
     std::string strInAccountName;
     int iInAccountNumber;
     std::string strAccountNumber;
+
+    int operationStatus = -1;
+    int iValidAcc = 1;
+    int retCode = 1;
 
     size_t padLeading = 9;
 
@@ -161,60 +224,92 @@ int selectAccount(const char* fileName){
         iInAccountNumber = -1;
         strAccountNumber = "";
 
-        std::cout << "Current active accounts:" << std::endl;
+        std::cout << "> Select from the current active accounts:" << std::endl;
         
 
-        if(fileOperations::printAllAccounts(fileName) == 1){
+        if(fileOperations::printAllUnlockedAccounts(fileName) == 1){
             return 1;
         } 
 
-        std::cout << "========================" << std::endl;
-        std::cout << "Enter \"exit\" to exit Account Selection. \n" << std::endl;
+        std::cout << "------------------------" << std::endl;
+        std::cout << "> Enter \"-1\" to exit Account Selection. \n" << std::endl;
 
         // prompt user for account name
-        std::cout << "Enter desired Account Name (case sensative): ";
+        std::cout << "> Enter desired Account Name (case sensative): ";
         inputHandler::getUserInput(strInAccountName);
         std::cout << "\n";
 
         //std::cout << "user entered: " << strInAccountName << std::endl;
-        if(strInAccountName.compare("exit") == 0){
-            break;
+        if(strInAccountName.compare("-1") == 0){
+            return 0;
         }
 
         // prompt user for the associated account number
-        std::cout << "Enter associated Account Number: ";
+        std::cout << "> Enter associated Account Number: ";
         iInAccountNumber = inputHandler::getUserValidInt();
+
         strAccountNumber = std::to_string(iInAccountNumber);
-        padLeadingZeros(padLeading, strAccountNumber);
-
-        std::cout << "\n\n";
-
         //std::cout << "user entered: " << strAccountNumber << std::endl;
-        if(strAccountNumber.compare("exit") == 0){
-            break;
+        if(strAccountNumber.compare("-1") == 0){
+            return 0;
         }
 
+        inputHandler::padLeadingZeros(padLeading, strAccountNumber);
+
+        //std::cout << "\n\n";
 
         // check if valid account name and number combination
-        int i = fileOperations::getFlagValidAccount(fileName, strInAccountName, strAccountNumber);
-        std::cout << "ret: " << i << std::endl;
-        break;
+        // 0 for true
+        // 1 for false
+        // 2 for error
+        iValidAcc = fileOperations::getFlagValidAccount(fileName, strInAccountName, strAccountNumber, "0");
+        //std::cout << "ret: " << i << std::endl;
+
+        if(iValidAcc == 1){
+            std::cout << "> Invalid account, please try again.\n" << std::endl;
+        } else if(iValidAcc == 0){
+            break;
+        } else {
+            return 1;
+        }
+        // else 1, ask for account again
+ 
     }
 
-    return 0;
+    if(iValidAcc == 0){
+        // When selecting account, need to set "Locked" = 1 to indicate account is currently being used.
+        operationStatus = fileOperations::setAccountLockStatus(fileName, strInAccountName, strAccountNumber, "1");
+        if (operationStatus != 0){
+            return operationStatus;
+        } else {
+            
+            // if setting "Locked" == 1 successful, then create AccountManagment object.
+            // Once a valid account has been chosen, then create an AccountManagement object that will loop internally to prompt the user for commands to interact with the account
+            AccountManagement am = AccountManagement(fileName, strInAccountName, strAccountNumber, retCode);
+        }
+
+        if (retCode != 99){
+            // When exit, need to set "Locked" = 0,
+            return fileOperations::setAccountLockStatus(fileName, strInAccountName, strAccountNumber, "0");
+        } else {
+            return 0;
+        }
+    }
+
+    return retCode;
 
 }
 
 /*
 Purpose:
-    Prompt the user for the desired information for the account;
-        - Account name
+    Prompt the user for the desired information for the account name. A 9 digit account number is generated for the account and then the account is added to the XML file.
 Parameters:
     N/A
 Return:
     int: For status of account creation
         0; success, file created.
         1; failure to create the file for the account.
+        2; exit.
 */
 int createAccount(const char* fileName){
 
@@ -223,9 +318,13 @@ int createAccount(const char* fileName){
     // Ask for account name
     std::string strAccountName;
 
-    
-    std::cout << "Enter desired Account Name: ";
+    std::cout << "> Enter \"-1\" to exit account creation.\n" << std::endl;
+    std::cout << "> Enter desired Account Name: ";
     inputHandler::getUserInput(strAccountName);
+
+    if (strAccountName.compare("-1") == 0){
+        return 2;
+    }
 
     // randomly generate account number
     std::string ac;
@@ -238,20 +337,40 @@ int createAccount(const char* fileName){
 
     }
 
-    std::cout << "Acc Number check value: " << accNumChk << std::endl;
+    std::cout << "> Generated account number: " << ac << std::endl;
 
+    //std::cout << "Acc Number check value: " << accNumChk << std::endl;
+
+    /*
+    0: The 9 digit account number exists and is in use.
+    1: The account number is not in use.
+    2: When attempting to load the XML file, an error occurred.
+    */
     if (accNumChk == 2){
         return 1;
+    } else {
+        // Populate file with XML and row elements to structure the internals of the file.
+        return fileOperations::addAccount(fileName, strAccountName, ac);
     }
-
-
-    // Populate file with XML and row elements to structure the internals of the file.
-    return fileOperations::addAccount(fileName, strAccountName, ac);
 }
 
 
+/*
+Purpose:
+    Print all accounts that exist within the XML file.
+Params:
+  const char* fileName: file name of the XML file
+Return:
+  0: success
+  1: error
+*/
+int printAllAccounts(const char* fileName){
+    return fileOperations::printAllAccounts(fileName);
+}
 
+/*
 int reactivateAccount(){
 
     return 0;
 }
+*/

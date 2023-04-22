@@ -23,7 +23,7 @@ namespace inputHandler {
 
     /*
     Purpose:
-        Get an integer value from the user.
+        Get an integer value from the user, prompt references "Selection"
     Parameters:
         N/A
     Return:
@@ -41,6 +41,15 @@ namespace inputHandler {
     */
     int getUserValidInt();
 
+   
+    /*
+    Purpose:
+        Remove all spaces from string
+    Params:
+        std::string &strLine: String to operate on.
+    Return:
+        N/A
+    */
     void removeStringSpaces(std::string &strLine);
 
     /*
@@ -52,6 +61,28 @@ namespace inputHandler {
         N/A
     */
     void getUserInput(std::string& strUserIn);
+
+    /*
+    Purpose:
+        get valid money value, 2 fractional digits. xx.yy
+    Parameters: 
+        N/A
+    Return:
+        long double
+    */
+    long double getUserValidMoneyVal();
+
+    /*
+    Purpose:
+        Get numeric value that has from inclusive 1 to inclusive 6 fractional digits
+    Parameters: 
+        N/A
+    Return:
+        long double
+    */
+    long double getUserValid6FracVal();
+
+    void padLeadingZeros(size_t numberOfDigits, std::string &strPadTarget);
 
 };
 
