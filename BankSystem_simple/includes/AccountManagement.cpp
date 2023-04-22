@@ -9,20 +9,17 @@
 #include "inputHandler.h"
 #include "fileOperations.h"
 
-/*
-Purpose:
-Params:
-  
-Return:
-  
-*/
+    /*
+    Purpose:
+
+    Params:
+      
+    Return:
+      
+    */
 
 /*
 
-Todo:
-
-
-  
 
   Need a better locking mechanism? 
     So, if the account is accessible for the owner through online banking, it's ok since they log in and can do whatever
@@ -32,8 +29,6 @@ Todo:
         2. setBalance -> updateTargetNodeAttrLevel1
                       -> addTransactionHistory
   Should have designed this with semaphores to lock the XML file to be accessed when a user is performing an operation. Oh well, just doing this for the heck of it.
-
-
 
 Test:
 Bank System:
@@ -52,14 +47,7 @@ std::cout << "5: Print account history" << std::endl;   ** pass
 std::cout << "99: Close Account" << std::endl;          ** pass
 
 
-** todo here, chill and clean up comments and add descriptions *********
-
 */
-
-// Close account: ask to withdraw all money or transfer. If withdraw, then set to 0 and lock account (Locked = 3). If transfer, transfer to valid account then lock.
-
-
-
 
 
 
@@ -190,9 +178,17 @@ int AccountManagement::AccountCommandCenter(){
   return 0;
 }
 
-// 0 for true
-// 1 for false
-// 2 for error
+/*
+Purpose:
+    Check if specified bank account exists and is not "Locked" = 3.
+Params:
+    N/A
+Return:
+    int
+    0: Specified account valid to be chosen
+    1: Specified account not valid to be chosen
+    2: for error
+*/
 int AccountManagement::checkIfAccountStillExists(){
   return fileOperations::getFlagValidAccount(this->strFileName, this->strAccountName, this->strAccountNumber, "1");
 }
@@ -653,7 +649,19 @@ int AccountManagement::transfer(){
 
 
 
-// Close account: ask to withdraw all money or transfer. If withdraw, then set to 0 and lock account (Locked = 3). If transfer, transfer to valid account then lock.
+
+/*
+Purpose:
+    Options menu for account closure. Can only close the account, "Locked" = 3, when the balance is 0.
+    The user can either withdraw or transfer to reduce the account's balance.
+    Once the balance is 0, the user can enter 99 to process the account closure.
+Params:
+  int &acctClosed: Reference variable to indicate if account was closed at the end of this process; 0 = account closed, 1 = not closed
+Return:
+  int
+  0: Successful account closure
+  1: Error
+*/
 int AccountManagement::closeAccount(int &acctClosed){
 
   int operationStatus = -1;

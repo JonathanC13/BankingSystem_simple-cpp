@@ -14,8 +14,6 @@ g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp inc
 */
 
 /* 
-
-
 git
 Branch from main
 work on branch
@@ -23,12 +21,10 @@ to merge, switch to main and Merge from, then sync to git
 */
 
 /*
-
 'Account' attribute 'Locked':
     0: unlocked
     1: in use
     3: locked (archived)
-
 */
 
 int createAccount(const char* fileName);
@@ -46,8 +42,8 @@ int main(){
 
     const char* fileName = "BankSystem.XML";
 
-    /* Return 1 then it indicates that if the file did not exist, there was an error attempting to create the XML file.
-        
+    /* 
+        if return value is 1 then it indicates that, if the file did not exist, there was an error attempting to create the XML file.
      */
     if(fileOperations::createFileIfNotExists(fileName) == 1){
         std::cout << ">> Error with the file." << std::endl;
@@ -58,14 +54,15 @@ int main(){
     int selectedOption;
 
     int operationStatus = 0;
+    int retCode;
 
     // test
     //continueFlag = 0;
 
-    int retCode;
-
     
 
+    //inputHandler::getUserValid6FracVal();
+    //return 0;
     //std::string strRet;
     //AccountManagement am = AccountManagement(fileName, "Bert", "000123112", retCode);
     //AccountManagement am = AccountManagement(fileName, "Jo", "000155554", retCode);
@@ -76,6 +73,8 @@ int main(){
     //inputHandler::getUserValidMoneyVal();
 
     //std::cout << strRet;
+
+  
     // /test
 
     //operationStatus = createAccount("BankSystem.XML");
@@ -192,14 +191,14 @@ void padLeadingZeros(size_t numberOfDigits, std::string &strPadTarget){
 */
 /*
 Purpose:
-    Display all accounts' names and account numbers for the user except file names with the last character 'X'. To select an account, have the user type the entire account name and number; accountName_19485
-    After valid account selected, an Account object is created and all account operations are handled within that object.
+    Display all accounts' names and account numbers that are not "Locked" = 3. To select an account, have the user type the account name and then account number.
+    After valid account selected, an AccountManagement object is created and all account operations are handled within that object.
 Parameters:
     N/A
 Return:
     int
-    0:
-    1: 
+    0: successfully exited
+    1: Error
 */
 int selectAccount(const char* fileName){
 
@@ -296,8 +295,7 @@ int selectAccount(const char* fileName){
 
 /*
 Purpose:
-    Prompt the user for the desired information for the account;
-        - Account name
+    Prompt the user for the desired information for the account name. A 9 digit account number is generated for the account and then the account is added to the XML file.
 Parameters:
     N/A
 Return:
@@ -349,11 +347,23 @@ int createAccount(const char* fileName){
     }
 }
 
+
+/*
+Purpose:
+    Print all accounts that exist within the XML file.
+Params:
+  const char* fileName: file name of the XML file
+Return:
+  0: success
+  1: error
+*/
 int printAllAccounts(const char* fileName){
     return fileOperations::printAllAccounts(fileName);
 }
 
+/*
 int reactivateAccount(){
 
     return 0;
 }
+*/

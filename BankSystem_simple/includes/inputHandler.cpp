@@ -36,7 +36,14 @@ namespace inputHandler {
     }
     */
 
-    // remove all spaces from string
+    /*
+    Purpose:
+        Remove all spaces from string
+    Params:
+        std::string &strLine: String to operate on.
+    Return:
+        N/A
+    */
     void removeStringSpaces(std::string &strLine){
         std::string newStr;
 
@@ -58,7 +65,14 @@ namespace inputHandler {
         strLine = newStr;
     }
 
-    // Getting an integer from the user for selection
+    /*
+    Purpose:
+        Get an integer value from the user, prompt references "Selection"
+    Parameters:
+        N/A
+    Return:
+        valid integer from user.
+    */
     int getUserValidSelectionInt(){
 
         std::string strIn;
@@ -78,7 +92,14 @@ namespace inputHandler {
         return intVal;
     }
 
-    // get valid int
+    /*
+    Purpose:
+        Get an integer value from the user.
+    Parameters:
+        N/A
+    Return:
+        valid integer from user.
+    */
     int getUserValidInt(){
 
         std::string strIn;
@@ -119,7 +140,14 @@ namespace inputHandler {
         return (s[sz] == 0);   // if value of p is NOT the null terminating value, then the string is not wholly a long double.
     }
 
-    // get valid money value, 2 fractional digits. xx.yy
+    /*
+    Purpose:
+        get valid money value, 2 fractional digits. xx.yy
+    Parameters: 
+        N/A
+    Return:
+        long double
+    */
     long double getUserValidMoneyVal(){
 
         std::string strIn;
@@ -141,12 +169,24 @@ namespace inputHandler {
         return ldVal;
     }
 
+    /*
+    Purpose:
+        Get numeric value that has max inclusive 6 fractional digits. Requires 1 digit before the decimal place. E.g: 5.
+    Parameters: 
+        N/A
+    Return:
+        long double
+    */
     long double getUserValid6FracVal(){
 
         std::string strIn;
         long double ldVal;
         
         std::getline(std::cin,strIn);
+
+        //std::cout << "a:" << (strIn.length() -1) << std::endl;
+        //std::cout << "b:" << getIndexOfDecimal(strIn) << std::endl;
+        //std::cout << "c:" << (strIn.length() -1) - getIndexOfDecimal(strIn) << std::endl;
 
         while(!isLongDouble(strIn, ldVal) || ((strIn.length() -1) - getIndexOfDecimal(strIn) > 6)){
 
@@ -156,6 +196,10 @@ namespace inputHandler {
 
             std::cout << "Please enter a number with maximum 6 fractional digits: ";
             std::getline(std::cin,strIn); // get new value
+
+            //std::cout << "a:" << (strIn.length() -1) << std::endl;
+            //std::cout << "b:" << getIndexOfDecimal(strIn) << std::endl;
+            //std::cout << "c:" << (strIn.length() -1) - getIndexOfDecimal(strIn) << std::endl;
         }
         std::cout << std::endl;
 

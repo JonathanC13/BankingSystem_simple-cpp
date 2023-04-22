@@ -17,8 +17,18 @@ namespace fileOperations {
     int loadBankFileXML(const char* fileName, pugi::xml_document& loadedDocRef);
 
 
-    // if file exists check correctness, simply the root element is "BankAccounts", if not, recreate
-    // if file does not exist, create XML file and add root element
+    /*
+    Purpose:
+        Check if the specified file exists. 
+            If the file exists: check the root element and if it is not what is expected then create a new file with Root element, "BankAccounts".
+            else: create a new file with Root element.
+    Params:
+        const char* fileName: file name to check existence.
+    Return:
+        int:
+        0: Success, File exists and correct
+        1: Error when creating file.
+    */
     int createBankFileXML(const char* fileName){
 
         FILE * pFile;
@@ -27,7 +37,7 @@ namespace fileOperations {
 
         if (pFile!=NULL) // if file exists
         {
-            std::cout << "File exists." << std::endl;
+            //std::cout << "File exists." << std::endl;
             fclose (pFile);
 
             //std::cout << "Checking file root element for correctness." << std::endl;
@@ -39,7 +49,7 @@ namespace fileOperations {
 
 
             //if(strcmp(rootElem.name(), &strRootElem[0]) != 0){ // if the root element is not the expected one, just create new file.
-            if(strRootElem.compare(rootElem.name()) != 0){ // if the root element is not the expected one, just create new file.    
+            if(strRootElem.compare(rootElem.name()) != 0){ //
                 pFile = fopen (fileName,"w");
                 fclose (pFile);
 
@@ -62,8 +72,17 @@ namespace fileOperations {
         return 1; // could not create file.
     }
 
-    // load the XML information from [file] to [memory] into the XML document object for use.
-    // 1 = fail, 0 success
+    /*
+    Purpose:
+        Load the XML information from [file] to [memory] into the XML document object for use.
+    Params:
+        const char* fileName: XML file that contains the accounts
+        pugi::xml_document& loadedDocRef: Reference variable for the loaded XML contents
+    Return:
+        int:
+        0: Successfully able to load the XML file's contents into a xml_document
+        1: Error when loading the XML file contents
+    */
     int loadBankFileXML(const char* fileName, pugi::xml_document& loadedDocRef){
 
         pugi::xml_parse_result result = loadedDocRef.load_file(fileName); // store result of the XML load
@@ -127,6 +146,17 @@ namespace fileOperations {
     }
 
     // commit the XML wholly to the XML file
+    /*
+    Purpose:
+        Save the xml_document contents to the XML file.
+    Params:
+        const char* fileName: XML file that contains the accounts
+        pugi::xml_document& doc: xml_document contents to save
+    Return:
+        int:
+        0: Successfully saved xml_document to the file
+        1: Error when attempting to save to the file
+    */
     int saveToBankFileXML(const char* fileName, pugi::xml_document& doc){
 
         if(doc.save_file(fileName)){ // true if success;
@@ -140,6 +170,17 @@ namespace fileOperations {
     }
 
     // Upon new XML file creation, add the root element where all child, "Accounts,"  will be added within
+    /*
+    Purpose:
+        Add a root node to the xml_document.
+    Params:
+        const char* fileName: XML file that contains the accounts
+        std::string rootElemName: node to be added as the root element node
+    Return:
+        int:
+        0: Successfully added node and saved to the XML file
+        1: Error
+    */
     int addRootElementXML(const char* fileName, std::string rootElemName){
 
         //std::cout << "Adding root element." << std::endl;
@@ -258,6 +299,16 @@ namespace fileOperations {
 
     }
 
+    /*
+    Purpose:
+        Print all the accounts with it's details: Account name, account number, Locked status.
+    Params:
+        const char* fileName: XML file that contains the accounts
+    Return:
+        int:
+        0: Success
+        1: Error
+    */
     int printAllAccounts(const char* fileName){
 
         std::string strLockedDesc;
@@ -290,6 +341,16 @@ namespace fileOperations {
         }
     }
 
+    /*
+    Purpose:
+        Print all the accounts with the "Locked" = 0.
+    Params:
+        const char* fileName: XML file name with the accounts
+    Return:
+        int:
+        0: Success
+        1: Error
+    */
     int printAllUnlockedAccounts(const char* fileName){
 
         pugi::xml_document doc;
@@ -321,6 +382,16 @@ namespace fileOperations {
         }
     }
 
+    /*
+    Purpose:
+        Print all accounts that have "Locked" = 0 || 1
+    Params:
+        const char* fileName: XML file name with the accounts
+    Return:
+        int:
+        0: Success
+        1: Error
+    */
     int printAllTransferableAccounts(const char* fileName){
 
         pugi::xml_document doc;
@@ -352,7 +423,18 @@ namespace fileOperations {
         }
     }
 
-
+    /*
+    Purpose:
+        Print all accounts that are not "Locked" = 3 and is not the specified account name and account number passed in the parameter.
+    Params:
+        const char* fileName: XML file for the accounts
+        std::string &strAccountName: Excluded account name 
+        std::string &strAccountNumber: Excluded account number
+    Return:
+        int:
+        0: Success
+        1: Error
+    */
     int printAllAccountsExcludeCurr(const char* fileName, std::string &strAccountName, std::string &strAccountNumber){
 
         pugi::xml_document doc;
@@ -427,6 +509,14 @@ namespace fileOperations {
         return 1;
     }
 
+    /*
+    Purpose:
+        Print the entire XML raw.
+    Params:
+        const char* fileName: File name of the XML file.
+    Return:
+        N/A
+    */
     void printXML(const char* fileName){
         std::cout << "Printing entire XML." << std::endl;
         pugi::xml_document doc;
@@ -436,7 +526,15 @@ namespace fileOperations {
         doc.print(std::cout);
     }
 
-    // EST, my time
+    /*
+    Purpose:
+        Gets the local time, EST. It checks my system's timezone to determine the localtime
+    Params:
+        char* timeRet: char array pointer for the generated time
+        int sizeTimeRet: size of the char array pointer
+    Return:
+        N/A
+    */
     void getLocalTime(char* timeRet, int sizeTimeRet){
 
 
@@ -528,6 +626,21 @@ namespace fileOperations {
         return 1;
     }
 
+
+    /*
+    Purpose:
+        Get the strNode value that is 1 level lower from the "Account" node
+    Params:
+        const char* c_fileName: XML file that contains the accounts
+        std::string strAccountName: Target account name
+        std::string strAccountNumber: Target account number
+        std::string strNode: Target node 1 level lower from the "Account" node.
+        std::string &strNodeDataRet: Reference variable for the node value of the strNode
+    Return:
+        int:
+        0: Success
+        1: Error loading XML the file
+    */
     int getTargetNodeDataLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string &strNodeDataRet){
 
         pugi::xml_document doc;
@@ -565,6 +678,21 @@ namespace fileOperations {
 
     }
 
+    /*
+    Purpose:
+        For the target node "Account," with the specified account name and number, search 1 level lower for the target strNode and get the target attribute's value.
+    Params:
+        const char* c_fileName: XML file for the accounts
+        std::string strAccountName: Specified account name
+        std::string strAccountNumber: Specified account number
+        std::string strNode: Name of the node to search for 1 level lower that the "Accounts" node.
+        std::string strAttrName: Name of the attribute within the strNode
+        std::string &strNodeAttrRet: Reference variable to store the value of strAttrName
+    Return:
+        int:
+        0: Success
+        1: Error
+    */
     int getTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string strAttrName, std::string &strNodeAttrRet){
 
         pugi::xml_document doc;
@@ -606,6 +734,21 @@ namespace fileOperations {
 
     }
 
+    /*
+    Purpose:
+        Update the value of strNode's strAttrName, where the strNode is 1 level lower from the "Account" node.
+    Params:
+        const char* c_fileName: XML file that contains the accounts
+        std::string strAccountName: Target account name
+        std::string strAccountNumber: Target account number
+        std::string strNode: Target node 1 level lower from the "Account" node.
+        std::string strAttrName: Target attribute within the strNode
+        std::string &strNodeAttrSet: Value to update the value of attribute strAttrName
+    Return:
+        int:
+        0: Successfully saved to the XML file
+        1: Error
+    */
     int updateTargetNodeAttrLevel1(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strNode, std::string strAttrName, std::string &strNodeAttrSet){
 
         pugi::xml_document doc;
@@ -893,7 +1036,19 @@ namespace fileOperations {
         return 0;
     }
 
-
+    /*
+    Purpose:
+        Execute funtion to obtain the balance of the specified account name and account number.
+    Params:
+        const char* &fileName: XML file for the accounts
+        std::string &strAccountName: specified account name
+        std::string &strAccountNumber: specified account number
+        std::string &strBalanceRet: reference variable for the balance.
+    Return:
+        int:
+        0: Success
+        1: Error
+    */
     int getBalance(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceRet){
         //std::cout << strAccountName << " " << strAccountNumber << std::endl;
         return getTargetNodeAttrLevel1(fileName, strAccountName, strAccountNumber, "Balance", "currentBalance", strBalanceRet);
@@ -901,7 +1056,20 @@ namespace fileOperations {
 
     
 
-
+    /*
+    Purpose:
+        Update the value of strAttrName which is an attribute of the "Account" node
+    Params:
+        const char* c_fileName: XML file that contains the accounts
+        std::string strAccountName: Target account name
+        std::string strAccountNumber: Target account number
+        std::string strAttrName: Attribute name within the node "Account"
+        std::string strAttrVal: Value to update the value of strAttrName
+    Return:
+        int:
+        0: Successfully saved to XML file
+        1: Error
+    */
     int updateAccountNode(const char* c_fileName, std::string strAccountName, std::string strAccountNumber, std::string strAttrName, std::string strAttrVal){
         pugi::xml_document doc;
 
@@ -1008,6 +1176,18 @@ namespace fileOperations {
         }
     }
 
+    /*
+    Purpose:
+        Process account closure, set "Locked" = 3 and add transaction history for account closure.
+    Params:
+        const char* c_fileName: XML file for the accounts
+        std::string strAccountName: Target account name
+        std::string strAccountNumber: Target account number
+    Return:
+        int:
+        0: Success in saving XML file with the changes
+        1: Error  
+    */
     int closeAccount(const char* c_fileName, std::string strAccountName, std::string strAccountNumber){
 
         char cDate[50];
@@ -1082,7 +1262,18 @@ namespace fileOperations {
         }
     }
 
-
+    /*
+    Purpose:
+        Print a formatted TransactionHistory for the target account.
+    Params:
+        const char* c_fileName: XML file for the accounts
+        std::string strAccountName: Specified account name
+        std::string strAccountNumber: Specified account number
+    Return:
+        int:
+        0: Success
+        1: Error
+    */
     int printAccountHistory(const char* c_fileName, std::string strAccountName, std::string strAccountNumber){
 
         pugi::xml_document doc;
@@ -1158,6 +1349,21 @@ namespace fileOperations {
         }
     }
 
+    /*
+    Purpose:
+        For the target account, update the balance and add transaction history for the withdraw
+    Params:
+        const char* &fileName: XML file for the accounts
+        std::string &strAccountName: Target account name
+        std::string &strAccountNumber: Target account number
+        std::string &strBalanceSet: Balance amount after the withdraw, used for current balance and transaction detail
+        std::string &strChangeAmt: Withdraw amount, used for transaction detail
+        std::string strBalanceOg: Balance value before transaction, used for transaction detail
+    Return:
+        int:
+        0: Success in saving XML file with the changes
+        1: Error  
+    */
     int commitWithdraw(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strChangeAmt, std::string strBalanceOg){
         char cDate[50];
         getLocalTime(&cDate[0], sizeof(cDate)-1);
@@ -1248,6 +1454,21 @@ namespace fileOperations {
            
     }
 
+    /*
+    Purpose:
+        For the target account, update the balance and add transaction history for the deposit
+    Params:
+        const char* &fileName: XML file for the accounts
+        std::string &strAccountName: Target account name
+        std::string &strAccountNumber: Target account number
+        std::string &strBalanceSet: Balance amount after the deposit, used for current balance and transaction detail
+        std::string &strChangeAmt: Deposit amount, used for transaction detail
+        std::string strBalanceOg: Balance value before transaction, used for transaction detail
+    Return:
+        int:
+        0: Success in saving XML file with the changes
+        1: Error  
+    */   
     int commitDeposit(const char* &fileName, std::string &strAccountName, std::string &strAccountNumber, std::string &strBalanceSet, std::string &strChangeAmt, std::string strBalanceOg){
         char cDate[50];
         getLocalTime(&cDate[0], sizeof(cDate)-1);
@@ -1330,6 +1551,25 @@ namespace fileOperations {
         return 1;
     }
 
+    /*
+    Purpose:
+        Process the transfer of funds from source account to destination account, and add the transaction history.
+    Params:
+        const char* &fileName: XML for the accounts
+        std::string &strAccountNameSrc: Source account name of the transfer
+        std::string &strAccountNumberSrc: Source account number of the transfer
+        std::string &strCurrBalSrc: Balance of the source account before the transfer
+        std::string &strNewBalSrc: New balance of the source account after the transfer
+        std::string &strAccountNameDest: Destination account name of the transfer
+        std::string &strAccountNumberDest: Destination account number of the transfer
+        std::string &strCurrBalDest: Balance of the destination account before the transfer
+        std::string &strNewBalDest: New balance of the destination account after the transfer
+        std::string &strTransferAmt: The amount being transferred
+    Return:
+        int:
+        0: Success in saving XML file with the changes
+        1: Error  
+    */
     int commitTransfer(const char* &fileName, std::string &strAccountNameSrc, std::string &strAccountNumberSrc, std::string &strCurrBalSrc, std::string &strNewBalSrc, std::string &strAccountNameDest, std::string &strAccountNumberDest, std::string &strCurrBalDest, std::string &strNewBalDest, std::string &strTransferAmt){
         char cDate[50];
         getLocalTime(&cDate[0], sizeof(cDate)-1);

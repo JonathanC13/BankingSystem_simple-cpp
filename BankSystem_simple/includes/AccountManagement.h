@@ -39,6 +39,17 @@ public:
   */
   int AccountCommandCenter();
 
+  /*
+  Purpose:
+      Check if specified bank account exists and is not "Locked" = 3.
+  Params:
+      N/A
+  Return:
+      int
+      0: Specified account valid to be chosen
+      1: Specified account not valid to be chosen
+      2: for error
+  */
   int checkIfAccountStillExists();
 
   /*
@@ -77,9 +88,30 @@ public:
   */
   int deposit();
 
-
+  /*
+  Purpose:
+    Prompt the user for the destination account and then the amount to transfer. If valid destination account and amount to withdraw to transfer, then attempt to commit transfer.
+  Params:
+    N/A
+  Return:
+    int
+    0: Successful transfer
+    1: Error
+  */
   int transfer();
 
+  /*
+  Purpose:
+      Options menu for account closure. Can only close the account, "Locked" = 3, when the balance is 0.
+      The user can either withdraw or transfer to reduce the account's balance.
+      Once the balance is 0, the user can enter 99 to process the account closure.
+  Params:
+    int &acctClosed: Reference variable to indicate if account was closed at the end of this process; 0 = account closed, 1 = not closed
+  Return:
+    int
+    0: Successful account closure
+    1: Error
+  */
   int closeAccount(int &acctClosed);
 
   //void printFileName();
