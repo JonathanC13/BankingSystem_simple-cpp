@@ -11,6 +11,26 @@
 /* complie:  
 g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp includes/fileOperations.cpp includes/AccountManagement.cpp Libraries/pugixml-1.13/src/pugixml.cpp
 // if using includes/eg.h, in the compile then need to explicitly reference the cpp the .h file references.
+TODO:
+test
+2. Account Management class: - here
+    Constructor:  
+        only asks for file name
+    Functions:
+        Exit
+        Request balance
+        Deposit
+        Withdraw
+        Close account -> are you sure confirmation. Not deleting the file, just add a flag to the Account element that it is locked
+3. Select account -- Need #2 completed first. Initialize object when valid account info entered by user
+4. Re-activate account: removing the 'X' last character from the file name, so that selectAccount function will display it.
+
+git
+Branch from main
+work on branch
+to merge, switch to main and Merge from, then sync to git
+
+@@@@@@@@@@@@@@a
 */
 
 /* 
