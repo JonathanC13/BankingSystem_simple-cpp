@@ -11,26 +11,7 @@
 /* complie:  
 g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp includes/fileOperations.cpp includes/AccountManagement.cpp Libraries/pugixml-1.13/src/pugixml.cpp
 // if using includes/eg.h, in the compile then need to explicitly reference the cpp the .h file references.
-TODO:
-test
-2. Account Management class: - here
-    Constructor:  
-        only asks for file name
-    Functions:
-        Exit
-        Request balance
-        Deposit
-        Withdraw
-        Close account -> are you sure confirmation. Not deleting the file, just add a flag to the Account element that it is locked
-3. Select account -- Need #2 completed first. Initialize object when valid account info entered by user
-4. Re-activate account: removing the 'X' last character from the file name, so that selectAccount function will display it.
 
-git
-Branch from main
-work on branch
-to merge, switch to main and Merge from, then sync to git
-
-@@@@@@@@@@@@@@a
 */
 
 /* 
@@ -41,7 +22,7 @@ git checkout -b iss53 (To create a new branch and switch to it at the same time,
 git fetch [repo] (to get activities like commits, files, and refs from the remote repo)
     git checkout [branch] (Can switch the to remote branch you just fetched to see)
     git log (check out a branch and see commit history)
-    git diff branch1..other-feature-branch (To see differences between the tips of both branches.)
+    git diff branch1..other-feature-branch (To see differences between the tips of both branches.) git diff --summary FETCH_HEAD
 git merge origin/[branch] (to merge, switch to main and Merge from, then sync to git)
 */
 
