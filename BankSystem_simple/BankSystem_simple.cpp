@@ -15,13 +15,14 @@ g++ -o BankSystem_simple.exe BankSystem_simple.cpp includes/inputHandler.cpp inc
 
 /* 
 git
-Branch from main
-work on branch (commits)
+git clone git@github.com:JonathanC13/BankingSystem_simple-cpp.git (clone the remote repo to local)
+git checkout -b iss53 (To create a new branch and switch to it at the same time, you can run the git checkout command with the -b switch. )
+    - work on branch (commits)
 git fetch [repo] (to get activities like commits, files, and refs from the remote repo)
     git checkout [branch] (Can switch the to remote branch you just fetched to see)
     git log (check out a branch and see commit history)
     git diff branch1..other-feature-branch (To see differences between the tips of both branches.)
-to merge, switch to main and Merge from, then sync to git
+git merge origin/[branch] (to merge, switch to main and Merge from, then sync to git)
 */
 
 /*
