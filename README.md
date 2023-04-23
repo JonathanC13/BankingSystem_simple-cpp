@@ -25,7 +25,5 @@ It's a single user application; I'm also cheating here.
 
 <h3>Durability: Transaction changes are completed even if the system fails.</h3>
 For sure it doesn't meet this requirement.
-
-
-
+<br><br><br><br>
 I am suffering from chronic brain rot and I am creatively brankrupt.
